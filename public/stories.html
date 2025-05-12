@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danh sách truyện - Web Đọc Truyện</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/stories.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="js/header.js"></script>
+  </head>
+  <body>
+    <!-- Main Content -->
+    <main>
+      <div class="container">
+        <!-- Filter Section -->
+        <div class="filter-section">
+          <h2>Lọc truyện</h2>
+          <div class="filter-rows">
+            <div class="filter-row">
+              <!-- Genre Dropdown -->
+              <div class="dropdown-filter" id="genre-filter">
+                <button class="dropdown-btn">Thể loại truyện</button>
+                <div class="dropdown-content" id="genre-dropdown-content">
+                  <!-- Genres loaded dynamically -->
+                </div>
+              </div>
+              <!-- Sort By Dropdown -->
+              <div class="dropdown-filter" id="sort-filter">
+                <button class="dropdown-btn" data-value="">Xếp theo</button>
+                <div class="dropdown-content">
+                  <a href="#" data-value="">Tất cả</a>
+                  <a href="#" data-value="newest">Truyện mới</a>
+                  <a href="#" data-value="hot">Truyện hot</a>
+                  <a href="#" data-value="completed">Truyện full</a>
+                </div>
+              </div>
+            </div>
+            <div class="filter-row">
+              <!-- Chapters Dropdown -->
+              <div class="dropdown-filter" id="chapter-filter">
+                <button class="dropdown-btn" data-value="">Số chương</button>
+                <div class="dropdown-content">
+                  <a href="#" data-value="">Tất cả</a>
+                  <a href="#" data-value="lt10">Số chương < 10</a>
+                  <a href="#" data-value="lt50">Số chương < 50</a>
+                  <a href="#" data-value="lt100">Số chương < 100</a>
+                  <a href="#" data-value="lt1000">Số chương < 1000</a>
+                </div>
+              </div>
+              <!-- Status Dropdown -->
+              <div class="dropdown-filter" id="status-filter">
+                <button class="dropdown-btn" data-value="">Trạng thái</button>
+                <div class="dropdown-content">
+                  <a href="#" data-value="">Tất cả</a>
+                  <a href="#" data-value="ongoing">Đang ra</a>
+                  <a href="#" data-value="completed">Hoàn thành</a>
+                  <a href="#" data-value="paused">Tạm ngưng</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="apply-filters" class="btn btn-primary">Áp dụng</button>
+        </div>
+
+        <!-- Stories Container -->
+        <div class="stories-container">
+          <!-- Main Content -->
+          <div class="content">
+            <h2 class="stories-title">Danh sách truyện</h2>
+            <div class="stories-grid" id="story-grid">
+              <!-- Stories will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="story-sidebar">
+            <!-- Top Stories -->
+            <div class="sidebar-form top-stories">
+              <h3 class="sidebar-title">Top truyện hay</h3>
+              <div class="top-stories-section">
+                <div class="tab-buttons">
+                  <button class="tab-btn active" data-period="day">Ngày</button>
+                  <button class="tab-btn" data-period="month">Tháng</button>
+                  <button class="tab-btn" data-period="year">Năm</button>
+                </div>
+                <div class="top-stories-list" id="top-stories-list">
+                  <!-- Will be populated dynamically -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Genres -->
+            <div class="sidebar-form genres-section">
+              <h3 class="sidebar-title">Thể Loại Truyện</h3>
+              <div class="genres-grid" id="genres-grid">
+                <!-- Genres will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>Web Đọc Truyện</h3>
+            <p>
+              Trang web đọc truyện chữ online miễn phí với nhiều thể loại đa
+              dạng.
+            </p>
+          </div>
+          <div class="footer-section">
+            <h3>Liên kết</h3>
+            <ul>
+              <li><a href="index.html">Trang chủ</a></li>
+              <li><a href="stories.html">Danh sách truyện</a></li>
+              <li><a href="about.html">Giới thiệu</a></li>
+              <li><a href="contact.html">Liên hệ</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Liên hệ</h3>
+            <p><i class="fas fa-envelope"></i> Email: info@truyenhay.com</p>
+            <p><i class="fas fa-phone"></i> Điện thoại: 0123 456 789</p>
+            <div class="social-icons">
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2023 Web Đọc Truyện. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/stories.js"></script>
+  </body>
+</html>

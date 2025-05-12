@@ -1,0 +1,56 @@
+<!-- Header -->
+<header>
+  <div class="container header-layout">
+    <div class="logo">
+      <a href="index.html"
+        ><h1>Truyện<span>Hay</span></h1></a
+      >
+    </div>
+    <nav class="main-nav">
+      <ul>
+        <li class="dropdown">
+          <a href="#" class="nav-link"><i class="fas fa-bars"></i> Danh sách</a>
+          <div class="dropdown-content">
+            <a href="stories.html">Tất cả</a>
+            <a href="stories.html?sort=newest&sortName=Truyện mới"
+              >Truyện mới</a
+            >
+            <a href="stories.html?sort=hot&sortName=Truyện hot">Truyện hot</a>
+            <a href="stories.html?sort=completed&sortName=Truyện full"
+              >Truyện full</a
+            >
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="nav-link"><i class="fas fa-list"></i> Thể loại</a>
+          <div class="dropdown-content" id="genre-dropdown">
+            <!-- Genres will be loaded dynamically -->
+          </div>
+        </li>
+        <li>
+          <a href="stories.html" class="btn btn-filter"
+            ><i class="fas fa-search"></i> Lọc truyện</a
+          >
+        </li>
+      </ul>
+    </nav>
+    <div class="search-bar">
+      <form class="search-form">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm kiếm truyện..."
+          required
+        />
+        <button type="submit" class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
+    </div>
+    <nav class="auth-nav">
+      <ul id="auth-section" class="active dropdown">
+        <!-- Auth links/user info loaded by auth.js -->
+      </ul>
+    </nav>
+  </div>
+</header>

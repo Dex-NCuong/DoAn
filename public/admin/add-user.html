@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thêm người dùng mới - Admin</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body class="admin-page">
+    <div class="admin-sidebar">
+      <div class="sidebar-header">
+        <h2>TruyệnHay Admin</h2>
+      </div>
+      <ul class="admin-menu">
+        <li>
+          <a href="index.html"
+            ><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</a
+          >
+        </li>
+        <li>
+          <a href="stories.html"><i class="fas fa-book"></i> Quản lý truyện</a>
+        </li>
+        <li>
+          <a href="chapters.html"
+            ><i class="fas fa-file-alt"></i> Quản lý chương</a
+          >
+        </li>
+        <li class="active">
+          <a href="users.html"
+            ><i class="fas fa-users"></i> Quản lý người dùng</a
+          >
+        </li>
+        <li>
+          <a href="transactions.html"
+            ><i class="fas fa-money-bill-wave"></i> Quản lý giao dịch</a
+          >
+        </li>
+        <li>
+          <a href="genres.html"><i class="fas fa-tags"></i> Quản lý thể loại</a>
+        </li>
+        <li>
+          <a href="coin-packages.html"
+            ><i class="fas fa-coins"></i> Quản lý gói xu</a
+          >
+        </li>
+      </ul>
+      <ul class="admin-menu footer-menu">
+        <li>
+          <a href="/index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+        </li>
+      </ul>
+    </div>
+    <div class="admin-content">
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <h1>Thêm người dùng mới</h1>
+        </div>
+        <div class="admin-header-right"></div>
+      </div>
+      <div class="admin-main">
+        <div class="admin-section" style="max-width: 500px; margin: 0 auto">
+          <div class="admin-card">
+            <form id="addUserForm">
+              <div class="form-group">
+                <label for="newUsername">Tên đăng nhập</label>
+                <input type="text" id="newUsername" name="username" required />
+              </div>
+              <div class="form-group">
+                <label for="newEmail">Email</label>
+                <input type="email" id="newEmail" name="email" required />
+              </div>
+              <div class="form-group">
+                <label for="newDisplayName">Tên hiển thị</label>
+                <input type="text" id="newDisplayName" name="displayName" />
+              </div>
+              <div class="form-group">
+                <label for="newPassword">Mật khẩu</label>
+                <input type="password" id="newPassword" name="password" />
+              </div>
+              <div class="form-group">
+                <label for="newRole">Vai trò</label>
+                <select id="newRole" name="role">
+                  <option value="user">Người dùng</option>
+                  <option value="admin">Quản trị viên</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="newCoins">Số xu</label>
+                <input
+                  type="number"
+                  id="newCoins"
+                  name="coins"
+                  min="0"
+                  value="0"
+                  readonly
+                  style="background: #f5f5f5; cursor: not-allowed"
+                />
+              </div>
+              <div class="form-group">
+                <label for="newStatus">Trạng thái</label>
+                <select id="newStatus" name="status">
+                  <option value="active" selected>Đang hoạt động</option>
+                  <option value="banned">Bị cấm</option>
+                </select>
+              </div>
+              <div class="form-action" style="margin-top: 20px">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="window.location.href='users.html'"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  id="submitUserBtn"
+                >
+                  Thêm người dùng
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Helper: get userId from URL
+      function getUserIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId");
+      }
+
+      async function loadUserForEdit(userId) {
+        try {
+          const response = await fetch(`/admin/users/${userId}`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          });
+          const data = await response.json();
+          if (!data.success) throw new Error(data.message);
+          const user = data.data;
+          document.getElementById("newUsername").value = user.username;
+          document.getElementById("newEmail").value = user.email;
+          document.getElementById("newDisplayName").value =
+            user.displayName || user.username;
+          document.getElementById("newRole").value = user.role;
+          document.getElementById("newCoins").value = user.coins || 0;
+          document.getElementById("newStatus").value = user.status
+            ? "active"
+            : "banned";
+          document.getElementById("newPassword").placeholder =
+            "Để trống nếu không đổi";
+          // Đổi nút submit
+          document.getElementById("submitUserBtn").textContent =
+            "Cập nhật người dùng";
+          document.getElementById("newPassword").removeAttribute("required");
+        } catch (err) {
+          alert("Không thể tải thông tin người dùng: " + err.message);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const userId = getUserIdFromUrl();
+        if (userId) {
+          loadUserForEdit(userId);
+          document.getElementById("submitUserBtn").textContent =
+            "Cập nhật người dùng";
+          document.getElementById("newPassword").removeAttribute("required");
+          document.getElementById("newPassword").placeholder =
+            "Để trống nếu không đổi";
+        } else {
+          document.getElementById("submitUserBtn").textContent =
+            "Thêm người dùng";
+          document
+            .getElementById("newPassword")
+            .setAttribute("required", "required");
+          document.getElementById("newPassword").placeholder = "";
+        }
+      });
+
+      document
+        .getElementById("addUserForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const userId = getUserIdFromUrl();
+          const username = document.getElementById("newUsername").value;
+          const email = document.getElementById("newEmail").value;
+          const password = document.getElementById("newPassword").value;
+          const displayName =
+            document.getElementById("newDisplayName").value || username;
+          const role = document.getElementById("newRole").value || "user";
+          const coins = document.getElementById("newCoins").value || 0;
+          const status = document.getElementById("newStatus").value || "active";
+          if (!username || !email || (!userId && !password)) {
+            alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+            return;
+          }
+          const userData = {
+            username,
+            email,
+            displayName,
+            role,
+            coins,
+            status,
+          };
+          if (password) userData.password = password;
+          try {
+            let response;
+            if (userId) {
+              // Update user
+              response = await fetch(`/admin/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+                },
+                body: JSON.stringify(userData),
+              });
+            } else {
+              // Add new user
+              userData.password = password;
+              response = await fetch("/admin/users", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+                },
+                body: JSON.stringify(userData),
+              });
+            }
+            const data = await response.json();
+            if (!data.success)
+              throw new Error(data.message || "Thao tác thất bại!");
+            alert(
+              userId
+                ? "Cập nhật người dùng thành công!"
+                : "Thêm người dùng thành công!"
+            );
+            window.location.href = "users.html";
+          } catch (error) {
+            alert("Lỗi: " + error.message);
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= story.title %> - Chi tiết truyện</title>
+    <link rel="stylesheet" href="/css/rating.css" />
+  </head>
+  <body>
+    <div class="story-detail">
+      <h1 id="story-title"><%= story.title %></h1>
+
+      <!-- Container cho component đánh giá -->
+      <div id="story-rating"></div>
+
+      <!-- Nút điều hướng -->
+      <div class="navigation-buttons">
+        <button class="prev-chapter">Chương trước</button>
+        <button class="next-chapter">Chương sau</button>
+      </div>
+
+      <!-- Nội dung truyện -->
+      <div class="story-content"><%= story.content %></div>
+    </div>
+
+    <script src="/js/rating.js"></script>
+    <script src="/js/story-detail.js"></script>
+  </body>
+</html>
