@@ -80,24 +80,29 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log("Parsed data:", data);
 
           if (data.success) {
-            console.log("Registration successful! User data:", data.user);
-
-            // Lưu thông tin đăng nhập
-            localStorage.setItem("auth_token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-
-            // Cập nhật trạng thái đăng nhập nếu auth.js đã được tải
-            if (
-              window.auth &&
-              typeof window.auth.updateCurrentUser === "function"
-            ) {
-              console.log("Updating auth state with user:", data.user);
-              window.auth.updateCurrentUser(data.user);
+            // Chỉ lưu token nếu có (chỉ khi đăng nhập thành công, không phải đăng ký chờ xác thực)
+            if (data.token && data.user) {
+              localStorage.setItem("auth_token", data.token);
+              localStorage.setItem("user", JSON.stringify(data.user));
+              if (
+                window.auth &&
+                typeof window.auth.updateCurrentUser === "function"
+              ) {
+                window.auth.updateCurrentUser(data.user);
+              }
             }
-
-            // Thông báo thành công và chuyển hướng
-            alert("Đăng ký thành công!");
-            window.location.href = "/";
+            // Thông báo xác thực email
+            if (verifyInfo) {
+              verifyInfo.textContent =
+                "Hãy xác thực email của bạn! Vui lòng kiểm tra hộp thư.";
+              verifyInfo.style.display = "block";
+              var verifyGuide = document.getElementById("verify-guide");
+              if (verifyGuide) verifyGuide.style.display = "block";
+            } else {
+              alert("Hãy xác thực email của bạn! Vui lòng kiểm tra hộp thư.");
+            }
+            registerForm.reset();
+            return;
           } else {
             showError(
               errorElement,
@@ -120,6 +125,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   } else {
     console.error("Không tìm thấy form đăng ký");
+  }
+
+  // Xử lý thông báo xác thực email và xác thực thành công
+  const params = new URLSearchParams(window.location.search);
+  const verifySuccess = document.getElementById("verify-success");
+  const verifyInfo = document.getElementById("verify-info");
+  if (params.get("verified") === "success") {
+    if (verifySuccess) {
+      verifySuccess.textContent =
+        "Xác thực email thành công! Bạn có thể đăng nhập.";
+      verifySuccess.style.display = "block";
+    } else {
+      alert("Xác thực email thành công! Bạn có thể đăng nhập.");
+    }
   }
 });
 

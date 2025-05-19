@@ -419,8 +419,10 @@ footer {
 
 .slide-content img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 400px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .slide-info {
@@ -3309,4 +3311,113 @@ footer {
 }
 .modal .close:hover {
   color: #e74c3c;
+}
+
+/* Slideshow Poster Styles */
+.poster-slideshow {
+  max-width: 900px;
+  margin: 0 auto 32px auto;
+}
+.slideshow-container {
+  position: relative;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.slide {
+  display: none;
+}
+.slide img {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+}
+.prev,
+.next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 12px;
+  margin-top: -22px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 24px;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.3);
+  transition: background 0.2s;
+  z-index: 2;
+}
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+.prev:hover,
+.next:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+.dot {
+  cursor: pointer;
+  height: 12px;
+  width: 12px;
+  margin: 0 4px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+.active,
+.dot:hover {
+  background-color: #717171;
+}
+.fade {
+  animation: fade 0.7s;
+}
+@keyframes fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hiệu ứng marquee cho banner top 10 */
+.marquee-banner-outer {
+  overflow: hidden;
+  background: #fffbe7;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 8px 0;
+  margin-bottom: 16px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: left;
+  position: relative;
+}
+.marquee-banner {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 18s linear infinite;
+  min-width: 100%;
+}
+.top-item {
+  margin-right: 32px;
+  display: inline-block;
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.marquee-banner-outer:hover .marquee-banner {
+  animation-play-state: paused;
 }

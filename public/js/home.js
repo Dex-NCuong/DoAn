@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load completed stories
   loadCompletedStories();
+
+  loadTopBanner();
 });
 
 // Function to load featured stories
@@ -325,4 +327,33 @@ function showBannedUserModal() {
     window.location.href = "/login.html";
   };
   // Xử lý link fanpage (đã có target _blank)
+}
+
+async function loadTopBanner() {
+  const banner = document.getElementById("top-banner");
+  if (!banner) return;
+  try {
+    const res = await fetch("/api/stories/top-views");
+    const data = await res.json();
+    if (data.success && data.stories && data.stories.length > 0) {
+      let html = data.stories
+        .map(
+          (story, idx) =>
+            `<span class="top-item">Top ${
+              idx + 1
+            }: <a href='/story-detail.html?id=${story._id}' target='_blank'>${
+              story.title
+            }</a> <span style='color:gold;'>🌟</span></span>`
+        )
+        .join(" ");
+      banner.innerHTML = `<div class="marquee-banner">${html}</div>`;
+      banner.classList.add("marquee-banner-outer");
+    } else {
+      banner.innerHTML = "";
+      banner.classList.remove("marquee-banner-outer");
+    }
+  } catch (e) {
+    banner.innerHTML = "";
+    banner.classList.remove("marquee-banner-outer");
+  }
 }

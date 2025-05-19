@@ -328,23 +328,29 @@ function handleRegister(e) {
       console.log("Registration response data:", data);
 
       if (data.success) {
-        // Set current user and save token
-        currentUser = data.user;
-
-        // Đảm bảo các giá trị quan trọng có giá trị mặc định nếu thiếu
-        currentUser.avatar = currentUser.avatar || "images/default-avatar.jpg";
-        currentUser.coins = currentUser.coins || 0;
-
-        localStorage.setItem("auth_token", data.token);
-        localStorage.setItem("user", JSON.stringify(currentUser));
-
-        console.log("Registration successful! User:", currentUser);
-
-        // Redirect to homepage or requested page
-        alert("Đăng ký thành công!");
-        const redirectUrl =
-          new URLSearchParams(window.location.search).get("redirect") || "/";
-        window.location.href = redirectUrl;
+        if (data.user) {
+          // Set current user and save token
+          currentUser = data.user;
+          // Đảm bảo các giá trị quan trọng có giá trị mặc định nếu thiếu
+          currentUser.avatar =
+            currentUser.avatar || "images/default-avatar.jpg";
+          currentUser.coins = currentUser.coins || 0;
+          localStorage.setItem("auth_token", data.token);
+          localStorage.setItem("user", JSON.stringify(currentUser));
+          console.log("Registration successful! User:", currentUser);
+          // Redirect to homepage or requested page
+          alert("Đăng ký thành công!");
+          const redirectUrl =
+            new URLSearchParams(window.location.search).get("redirect") || "/";
+          window.location.href = redirectUrl;
+        } else {
+          // Trường hợp chỉ xác thực email, không có user
+          alert(
+            data.message ||
+              "Hãy xác thực email của bạn! Vui lòng kiểm tra hộp thư."
+          );
+        }
+        return;
       } else {
         console.error("Registration failed:", data.message);
         showAuthError(

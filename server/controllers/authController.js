@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const nodemailer = require("nodemailer");
 
 // Tạo token JWT
 const generateToken = (id) => {
@@ -8,78 +9,98 @@ const generateToken = (id) => {
   });
 };
 
+// Hàm gửi email xác thực
+async function sendVerificationEmail(email, token) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  const link = `http://localhost:3200/verify-email.html?token=${token}`;
+  await transporter.sendMail({
+    from: "TruyenHay <no-reply@truyenhay.com>",
+    to: email,
+    subject: "Xác thực email",
+    html: `<p>Nhấn vào nút bên dưới để xác thực email:</p><a href="${link}"><button style='padding:10px 20px;background:#007bff;color:#fff;border:none;border-radius:5px;'>Xác thực</button></a>`,
+  });
+}
+
 // @desc    Đăng ký người dùng mới
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    const { name, email, password } = req.body;
-
-    // Validate input
-    if (!name || !email || !password) {
-      console.log("Dữ liệu đầu vào thiếu:", {
-        name,
-        email,
-        password: password ? "Có" : "Không",
-      });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Vui lòng cung cấp đầy đủ thông tin (tên, email, mật khẩu)",
+        message:
+          "Vui lòng cung cấp đầy đủ thông tin (tên đăng nhập, email, mật khẩu)",
       });
     }
-
-    // Kiểm tra email đã tồn tại chưa
-    console.log("Kiểm tra email đã tồn tại:", email);
     const userExists = await User.findOne({ email });
-
     if (userExists) {
-      console.log("Email đã tồn tại:", email);
       return res.status(400).json({
         success: false,
         message: "Email đã được sử dụng",
       });
     }
-
-    // Tạo người dùng mới
-    console.log("Tạo người dùng mới:", { name, email });
-    const user = await User.create({
-      name,
+    // Tạo user với isVerified: false
+    await User.create({
+      username,
       email,
       password,
-      coins: 50, // Người dùng mới được tặng 50 xu
+      coins: 50,
+      isVerified: false,
     });
-
-    if (user) {
-      console.log("Đăng ký thành công, user ID:", user._id);
-      res.status(201).json({
-        success: true,
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar,
-          coins: user.coins,
-        },
-        token: generateToken(user._id),
-      });
-    } else {
-      console.log("Tạo user thất bại nhưng không có lỗi");
-      res.status(400).json({
-        success: false,
-        message: "Dữ liệu người dùng không hợp lệ",
-      });
-    }
+    // Tạo token xác thực
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    // Gửi email xác thực
+    await sendVerificationEmail(email, token);
+    // Không trả về user và token ở đây!
+    res.status(201).json({
+      success: true,
+      message: "Hãy xác thực email của bạn! Vui lòng kiểm tra hộp thư.",
+    });
   } catch (error) {
-    console.error("Lỗi đăng ký:", error);
-    console.error(error.stack);
     res.status(500).json({
       success: false,
       message: "Lỗi server khi đăng ký",
       error: error.message,
-      stack: process.env.NODE_ENV === "production" ? null : error.stack,
     });
+  }
+};
+
+// @desc    Xác thực email
+// @route   GET /api/auth/verify-email?token=...
+// @access  Public
+exports.verifyEmail = async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Người dùng không tồn tại" });
+    }
+    if (user.isVerified) {
+      return res.json({
+        success: true,
+        message: "Email đã được xác thực trước đó.",
+      });
+    }
+    user.isVerified = true;
+    await user.save();
+    return res.json({ success: true, message: "Xác thực email thành công!" });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Token không hợp lệ hoặc đã hết hạn." });
   }
 };
 
@@ -88,38 +109,29 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
   try {
-    console.log("[Login Controller] Processing login request");
-
     const { email, password } = req.body;
-    console.log("[Login Controller] Email:", email);
-
-    // Kiểm tra email và lấy thông tin user kèm password
     const user = await User.findOne({ email }).select("+password");
-
     if (!user) {
-      console.log(`[Login Controller] User not found with email: ${email}`);
       return res.status(401).json({
         success: false,
         message: "Email hoặc mật khẩu không chính xác",
       });
     }
-
-    // Kiểm tra mật khẩu
+    // Kiểm tra xác thực email
+    if (!user.isVerified) {
+      return res.status(401).json({
+        success: false,
+        message: "Bạn cần xác thực email trước khi đăng nhập!",
+      });
+    }
     const isMatch = await user.matchPassword(password);
-
     if (!isMatch) {
-      console.log(`[Login Controller] Password incorrect for user: ${email}`);
       return res.status(401).json({
         success: false,
         message: "Email hoặc mật khẩu không chính xác",
       });
     }
-
-    console.log(`[Login Controller] Login successful for user: ${email}`);
-
-    // Đảm bảo gửi Content-Type
     res.set("Content-Type", "application/json");
-
     res.status(200).json({
       success: true,
       user: {
@@ -133,8 +145,6 @@ exports.login = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
-    console.error("[Login Controller] Login error:", error);
-    // Đảm bảo gửi Content-Type
     res.set("Content-Type", "application/json");
     res.status(500).json({
       success: false,

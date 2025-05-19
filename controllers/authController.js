@@ -14,47 +14,47 @@ async function generateUniqueUserId() {
   return userId;
 }
 
+async function sendVerificationEmail(email, token) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  const link = `http://localhost:3200/verify-email.html?token=${token}`;
+  await transporter.sendMail({
+    from: "TruyenHay <no-reply@truyenhay.com>",
+    to: email,
+    subject: "Xác thực email",
+    html: `<p>Nhấn vào nút bên dưới để xác thực email:</p><a href="${link}"><button style='padding:10px 20px;background:#007bff;color:#fff;border:none;border-radius:5px;'>Xác thực</button></a>`,
+  });
+}
+
 // Register new user
 exports.register = async (req, res) => {
   try {
-    console.log("Register request received:", req.body);
     const { username, email, password } = req.body;
-
-    // Validate input
     if (!username || !email || !password) {
       return res.status(400).header("Content-Type", "application/json").json({
         success: false,
         message: "Vui lòng cung cấp đầy đủ username, email và password.",
       });
     }
-
-    // Check MongoDB connection
     if (mongoose.connection.readyState !== 1) {
-      console.error(
-        "MongoDB connection is not open. Current state:",
-        mongoose.connection.readyState
-      );
       return res.status(500).header("Content-Type", "application/json").json({
         success: false,
         message:
           "Kết nối với cơ sở dữ liệu bị gián đoạn. Vui lòng thử lại sau.",
       });
     }
-
-    // Check if user already exists
-    const userExists = await User.findOne({
-      $or: [{ email }, { username }],
-    });
-
+    const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
-      console.log("User already exists:", userExists);
       return res.status(400).header("Content-Type", "application/json").json({
         success: false,
         message: "Tài khoản hoặc email đã tồn tại!",
       });
     }
-
-    // Create new user
     const userId = await generateUniqueUserId();
     const user = new User({
       username,
@@ -63,69 +63,22 @@ exports.register = async (req, res) => {
       coins: 0,
       avatar: "images/default-avatar.jpg",
       userId,
+      isVerified: false,
     });
-
-    console.log("Attempting to save user:", user);
-
-    try {
-      await user.save();
-      console.log("User saved successfully:", user._id);
-    } catch (saveError) {
-      console.error("Error saving user to MongoDB:", saveError);
-      return res
-        .status(500)
-        .header("Content-Type", "application/json")
-        .json({
-          success: false,
-          message:
-            "Lỗi khi lưu người dùng vào cơ sở dữ liệu: " + saveError.message,
-        });
-    }
-
-    // Set session
-    req.session.userId = user._id;
-    req.session.username = user.username;
-    req.session.userRole = user.role;
-
-    // Create safe user object (without password)
-    const safeUser = {
-      _id: user._id,
-      userId: user.userId,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      coins: user.coins,
-      avatar: user.avatar || "images/default-avatar.jpg",
-      status: user.status,
-    };
-
-    // Create JWT token
-    const payload = {
-      id: user._id.toString(),
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    };
-
-    // Use environment variable for secret key or a fallback
-    const secret = process.env.JWT_SECRET || "your_jwt_secret";
-
-    // Generate token with expiration of 1 hour
-    const token = jwt.sign(payload, secret, { expiresIn: "1h" });
-
-    console.log("Generated JWT token for new user:", user.username);
-
-    console.log("Returning success response with user:", safeUser);
-
-    // Return success response
+    await user.save();
+    // Tạo token xác thực
+    const token = jwt.sign(
+      { email },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1h" }
+    );
+    await sendVerificationEmail(email, token);
+    // Chỉ trả về message xác thực email, không trả về user/token
     res.status(201).header("Content-Type", "application/json").json({
       success: true,
-      message: "Đăng ký thành công!",
-      user: safeUser,
-      token: token,
+      message: "Hãy xác thực email của bạn! Vui lòng kiểm tra hộp thư.",
     });
   } catch (error) {
-    console.error("Registration error:", error);
     res.status(500).header("Content-Type", "application/json").json({
       success: false,
       message: "Đã xảy ra lỗi khi đăng ký tài khoản.",
@@ -147,6 +100,14 @@ exports.login = async (req, res) => {
       return res.status(401).header("Content-Type", "application/json").json({
         success: false,
         message: "Tài khoản không tồn tại!",
+      });
+    }
+
+    // Check xác thực email
+    if (!user.isVerified) {
+      return res.status(401).header("Content-Type", "application/json").json({
+        success: false,
+        message: "Bạn cần xác thực email trước khi đăng nhập!",
       });
     }
 
@@ -371,5 +332,35 @@ exports.resetPassword = async (req, res) => {
       success: false,
       message: "Token không hợp lệ hoặc đã hết hạn.",
     });
+  }
+};
+
+// Xác thực email
+exports.verifyEmail = async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your_jwt_secret"
+    );
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Người dùng không tồn tại" });
+    }
+    if (user.isVerified) {
+      return res.json({
+        success: true,
+        message: "Email đã được xác thực trước đó.",
+      });
+    }
+    user.isVerified = true;
+    await user.save();
+    return res.json({ success: true, message: "Xác thực email thành công!" });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Token không hợp lệ hoặc đã hết hạn." });
   }
 };

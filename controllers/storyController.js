@@ -634,3 +634,19 @@ exports.getAllGenres = async (req, res) => {
     });
   }
 };
+
+// API: Top 10 stories by views
+exports.getTopStoriesByViews = async (req, res) => {
+  try {
+    const stories = await Story.find({})
+      .sort({ views: -1 })
+      .limit(10)
+      .select("title views");
+    res.json({ success: true, stories });
+  } catch (error) {
+    console.error("Error fetching top stories by views:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Lỗi khi lấy top truyện." });
+  }
+};

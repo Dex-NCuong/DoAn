@@ -9,6 +9,7 @@ const {
   likeStory,
   rateStory,
   getStoriesForAdmin,
+  getTopStoriesByViews,
 } = require("../controllers/storyController");
 const { protect, authorize } = require("../middleware/auth");
 
@@ -17,6 +18,7 @@ const chapterRouter = require("./chapterRoutes");
 router.use("/:storyId/chapters", chapterRouter);
 
 // Public routes
+router.get("/top-views", getTopStoriesByViews);
 router.get("/", getStories);
 router.get("/:id", getStory);
 

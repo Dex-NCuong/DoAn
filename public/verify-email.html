@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xác thực email</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <div class="auth-container">
+          <div class="auth-box">
+            <h2>Xác thực email</h2>
+            <div class="alert alert-info" id="verify-message">
+              Đang xác thực...
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      const messageDiv = document.getElementById("verify-message");
+      if (token) {
+        fetch(`/api/auth/verify-email?token=${token}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Server error");
+            return res.json();
+          })
+          .then((data) => {
+            if (data.success) {
+              messageDiv.className = "alert alert-success";
+              messageDiv.textContent =
+                "Xác thực email thành công! Đang chuyển hướng...";
+              setTimeout(() => {
+                window.location.href = "/login.html?verified=success";
+              }, 1500);
+            } else {
+              messageDiv.className = "alert alert-danger";
+              messageDiv.textContent = data.message || "Xác thực thất bại!";
+            }
+          })
+          .catch(() => {
+            messageDiv.className = "alert alert-danger";
+            messageDiv.textContent = "Lỗi kết nối server!";
+          });
+      } else {
+        messageDiv.className = "alert alert-danger";
+        messageDiv.textContent = "Thiếu mã xác thực!";
+      }
+    </script>
+  </body>
+</html>

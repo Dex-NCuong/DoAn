@@ -108,4 +108,7 @@ router.post("/refresh", async (req, res) => {
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
 
+// Xác thực email
+router.get("/verify-email", authController.verifyEmail);
+
 module.exports = router;

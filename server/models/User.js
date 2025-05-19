@@ -66,6 +66,10 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Mã hóa mật khẩu trước khi lưu

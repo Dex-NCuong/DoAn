@@ -12,6 +12,10 @@ const User = require("../../models/User");
 const Genre = require("../../models/Genre");
 const Rating = require("../../models/Rating");
 const StoryView = require("../../models/StoryView");
+const storyController = require("../../controllers/storyController");
+
+// Top 10 stories by views (Đặt lên đầu)
+router.get("/top-views", storyController.getTopStoriesByViews);
 
 // @route   GET api/stories/search-suggestions
 // @desc    Get story title suggestions based on search term

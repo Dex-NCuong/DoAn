@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize search functionality
   initSearch();
   initSearchSuggestions();
+
+  // Poster Slideshow
+  let posterSlideIndex = 1;
+  showPosterSlides(posterSlideIndex);
 });
 
 // Mobile menu functionality
@@ -182,3 +186,42 @@ function debounce(func, wait) {
 
 // Export functions for use in other files
 window.initSearchSuggestions = initSearchSuggestions;
+
+// Poster Slideshow
+let posterSlideIndex = 1;
+showPosterSlides(posterSlideIndex);
+
+function plusSlides(n) {
+  showPosterSlides((posterSlideIndex += n));
+}
+
+function currentSlide(n) {
+  showPosterSlides((posterSlideIndex = n));
+}
+
+function showPosterSlides(n) {
+  let i;
+  const slides = document.querySelectorAll("#poster-slideshow .slide");
+  const dots = document.querySelectorAll(".poster-slideshow .dot");
+  if (slides.length === 0) return;
+  if (n > slides.length) {
+    posterSlideIndex = 1;
+  }
+  if (n < 1) {
+    posterSlideIndex = slides.length;
+  }
+  for (i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";
+  }
+  for (i = 0; i < dots.length; i++) {
+    dots[i].className = dots[i].className.replace(" active", "");
+  }
+  slides[posterSlideIndex - 1].style.display = "block";
+  if (dots[posterSlideIndex - 1])
+    dots[posterSlideIndex - 1].className += " active";
+}
+
+// Auto slideshow
+setInterval(() => {
+  plusSlides(1);
+}, 4000);
