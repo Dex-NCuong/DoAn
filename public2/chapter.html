@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đọc truyện</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/chapter.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      #chapter-content {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body class="chapter-page-override">
+    <!-- Main Content -->
+    <main class="chapter-page">
+      <div class="container chapter-container">
+        <div class="chapter-header">
+          <h2 class="story-title">
+            <a href="#" id="story-link">Tên truyện</a>
+          </h2>
+          <h1 class="chapter-title" id="chapter-title">Tiêu đề chương</h1>
+          <div class="chapter-meta">
+            <span id="chapter-number"></span>
+            <span id="chapter-date"></span>
+          </div>
+          <button id="save-chapter-btn" class="save-chapter-btn">
+            <i class="fas fa-bookmark"></i> Lưu chương
+          </button>
+        </div>
+
+        <!-- Top Navigation -->
+        <div class="chapter-nav top-nav">
+          <a href="#" id="prev-chap-btn-top" class="nav-btn prev-btn disabled"
+            ><i class="fas fa-arrow-left"></i> Chương trước</a
+          >
+          <button id="config-btn" class="config-btn">
+            <i class="fas fa-th"></i>
+          </button>
+          <a href="#" id="next-chap-btn-top" class="nav-btn next-btn disabled"
+            >Chương sau <i class="fas fa-arrow-right"></i
+          ></a>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div id="config-panel" class="config-panel hidden">
+          <button id="close-config-btn" class="close-config-btn">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="config-section">
+            <h4><i class="fas fa-palette"></i> Màu nền</h4>
+            <div class="color-options">
+              <span
+                class="color-option active"
+                data-color="#f4f4f4"
+                style="background-color: #f4f4f4"
+                title="Xám nhạt"
+              ></span>
+              <span
+                class="color-option"
+                data-color="#f8f1e3"
+                style="background-color: #f8f1e3"
+                title="Vàng be"
+              ></span>
+              <span
+                class="color-option"
+                data-color="#e6f2e6"
+                style="background-color: #e6f2e6"
+                title="Xanh nhạt"
+              ></span>
+              <span
+                class="color-option"
+                data-color="#e3f2fd"
+                style="background-color: #e3f2fd"
+                title="Xanh dương nhạt"
+              ></span>
+              <span
+                class="color-option"
+                data-color="#fce4ec"
+                style="background-color: #fce4ec"
+                title="Hồng phấn"
+              ></span>
+              <span
+                class="color-option"
+                data-color="#e0e0e0"
+                style="background-color: #e0e0e0"
+                title="Xám trung tính"
+              ></span>
+              <span
+                class="color-option dark-mode"
+                data-color="#212529"
+                style="background-color: #212529"
+                title="Nền tối"
+              ></span>
+            </div>
+          </div>
+          <div class="config-section">
+            <h4><i class="fas fa-font"></i> Font chữ</h4>
+            <select id="font-select">
+              <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">
+                Segoe UI
+              </option>
+              <option value="'Times New Roman', Times, serif">
+                Times New Roman
+              </option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="'Merriweather', serif">Merriweather</option>
+              <option value="'Source Sans Pro', sans-serif">
+                Source Sans Pro
+              </option>
+            </select>
+          </div>
+          <div class="config-section">
+            <h4><i class="fas fa-text-height"></i> Cỡ chữ</h4>
+            <div class="size-control">
+              <button id="decrease-font-size">-</button>
+              <span id="font-size-display">22px</span>
+              <button id="increase-font-size">+</button>
+            </div>
+          </div>
+          <div class="config-section">
+            <h4><i class="fas fa-arrows-alt-h"></i> Chiều rộng khung</h4>
+            <div class="size-control">
+              <button id="decrease-width">-</button>
+              <span id="width-display">100%</span>
+              <button id="increase-width">+</button>
+            </div>
+          </div>
+          <div class="config-section">
+            <h4><i class="fas fa-align-left"></i> Giãn dòng</h4>
+            <div class="size-control">
+              <button id="decrease-line-height">-</button>
+              <span id="line-height-display">180%</span>
+              <button id="increase-line-height">+</button>
+            </div>
+          </div>
+          <button id="reset-config-btn" class="reset-btn">
+            Trở Về Mặc Định
+          </button>
+        </div>
+
+        <!-- Adjacent Chapter Links (Top) -->
+        <div class="adjacent-chapters top-adjacent">
+          <a
+            href="#"
+            id="prev-chap-link-top"
+            class="adjacent-link prev-link disabled"
+            >Chương trước: ...</a
+          >
+          <a
+            href="#"
+            id="next-chap-link-top"
+            class="adjacent-link next-link disabled"
+            >Chương sau: ...</a
+          >
+        </div>
+
+        <!-- Chapter Content -->
+        <div id="chapter-content-wrapper">
+          <div id="chapter-content" class="chapter-content">
+            <div class="loading-placeholder">
+              <i class="fas fa-spinner fa-spin"></i> Đang tải nội dung...
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="chapter-nav bottom-nav">
+          <a
+            href="#"
+            id="prev-chap-btn-bottom"
+            class="nav-btn prev-btn disabled"
+            ><i class="fas fa-arrow-left"></i> Chương trước</a
+          >
+          <a
+            href="#"
+            id="next-chap-btn-bottom"
+            class="nav-btn next-btn disabled"
+            >Chương sau <i class="fas fa-arrow-right"></i
+          ></a>
+        </div>
+
+        <!-- Adjacent Chapter Links (Bottom) -->
+        <div class="adjacent-chapters bottom-adjacent">
+          <a
+            href="#"
+            id="prev-chap-link-bottom"
+            class="adjacent-link prev-link disabled"
+            >Chương trước: ...</a
+          >
+          <a
+            href="#"
+            id="next-chap-link-bottom"
+            class="adjacent-link next-link disabled"
+            >Chương sau: ...</a
+          >
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="chapter-footer">
+      <div class="container">
+        <div class="footer-logo">
+          <a href="index.html"
+            ><h1>Truyện<span>Hay</span></h1></a
+          >
+        </div>
+        <p class="footer-description">
+          TruyệnHay là website đọc truyện online cập nhật liên tục và nhanh nhất
+          các truyện tiên hiệp, kiếm hiệp, sắc hiệp, huyền ảo được các thành
+          viên liên tục đóng góp rất nhiều truyện hay và nổi bật.
+        </p>
+        <p class="copyright">&copy; 2023 TruyệnHay. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Lên đầu trang">
+      <i class="fas fa-arrow-up"></i>
+      <span>TOP</span>
+    </button>
+
+    <!-- Scripts -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/chapter.js"></script>
+    <script>
+      // Ngăn chặn sao chép nội dung
+      document
+        .getElementById("chapter-content")
+        .addEventListener("copy", function (e) {
+          e.preventDefault();
+          return false;
+        });
+
+      // Ngăn chặn chuột phải
+      document
+        .getElementById("chapter-content")
+        .addEventListener("contextmenu", function (e) {
+          e.preventDefault();
+          return false;
+        });
+
+      // Ngăn chặn kéo thả
+      document
+        .getElementById("chapter-content")
+        .addEventListener("dragstart", function (e) {
+          e.preventDefault();
+          return false;
+        });
+    </script>
+  </body>
+</html>

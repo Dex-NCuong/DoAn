@@ -1,0 +1,626 @@
+/* Chapter Page Styles */
+
+/* Force dark background for the entire page */
+body.chapter-page-override {
+  background-color: #111111b7 !important; /* Very dark black background */
+  color: #cccccc; /* Light gray text for contrast */
+}
+
+/* Search suggestions override for chapter page */
+body.chapter-page-override .search-suggestions {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+body.chapter-page-override .suggestion-item {
+  color: #333;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+body.chapter-page-override .suggestion-item:hover,
+body.chapter-page-override .suggestion-item.selected {
+  background-color: #f0f0f0;
+}
+
+/* Remove fixed positioning - make header behave normally again */
+body.chapter-page-override > header {
+  position: static; /* Default position, scrolls with page */
+  background-color: #fff; /* White background for header */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Keep shadow */
+  z-index: 100; /* Lower z-index */
+}
+
+/* Remove the main padding that was compensating for fixed header */
+main.chapter-page {
+  padding-top: 0; /* No extra padding needed */
+}
+
+/* Style the reading container specifically */
+.chapter-container {
+  max-width: 800px; /* Default width */
+  margin: 20px auto;
+  padding: 0; /* Remove padding from container */
+  background-color: transparent;
+  transition: max-width 0.3s;
+}
+
+/* Content wrapper gets the background color from settings */
+#chapter-content-wrapper {
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  min-height: 300px;
+  border: 1px solid #495057;
+  box-shadow: 0 1px 3px rgba(255, 255, 255, 0.05);
+}
+
+/* Add Chapter Form Container */
+.add-chapter-container {
+  width: 100%;
+  margin: 0;
+  padding: 20px;
+  background-color: transparent;
+  position: relative;
+  resize: both;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* Add resize handle */
+.add-chapter-container::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #4caf50 50%);
+  z-index: 1000;
+}
+
+/* Wrapper for the container to allow horizontal resizing */
+.add-chapter-wrapper {
+  position: relative;
+  width: 100%;
+  min-width: 600px;
+  padding: 0 20px;
+  overflow: hidden;
+}
+
+/* Chapter Content Textarea */
+.chapter-content {
+  font-family: inherit; /* Inherit from body */
+  font-size: inherit; /* Inherit from body */
+  line-height: inherit; /* Inherit from body */
+  color: inherit; /* Inherit from body */
+}
+
+.chapter-content p {
+  margin-bottom: 1.5em; /* Spacing between paragraphs */
+}
+
+/* Add Chapter Form Styles */
+.add-chapter-container .chapter-content {
+  width: 100%;
+  min-height: 500px;
+  padding: 15px;
+  font-size: 16px;
+  line-height: 1.6;
+  border: 1px solid #495057;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #333;
+  resize: vertical;
+}
+
+.add-chapter-container .chapter-content:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Header Styling - REMOVE STICKY */
+.chapter-page header {
+  /* REMOVE position: sticky; */
+  /* REMOVE top: 0; */
+  /* REMOVE z-index: 1000; */
+  /* background-color: #fff; -- Already set in the fixed rule */
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); -- Already set */
+}
+
+/* Chapter Header (inside container, on dark background) */
+.chapter-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 20px 0 10px 0; /* Adjust padding */
+  border-bottom: 1px solid #495057; /* Darker border */
+}
+
+.chapter-header .story-title a {
+  color: #ffc107; /* Yellow for story title on dark background */
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: 600;
+}
+.chapter-header .story-title a:hover {
+  text-decoration: underline;
+}
+
+.chapter-header .chapter-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #adb5bd; /* Lighter gray for chapter title on dark background */
+  margin-top: 5px;
+}
+
+/* Navigation Buttons */
+.chapter-nav {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px; /* Add gap between buttons */
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* Center text now icon is hidden */
+  padding: 10px 15px; /* Reverted padding for better height */
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 14px; /* Fixed font size */
+  font-weight: 600; /* Slightly bolder */
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #4caf50; /* Explicitly set green */
+  color: white; /* Explicitly set white */
+  flex: 1; /* Make buttons fill available space */
+  text-align: center;
+}
+
+/* Hide the arrow icons */
+.nav-btn i {
+  display: none;
+}
+
+.nav-btn:hover {
+  background-color: #45a049; /* Darker green */
+}
+
+.nav-btn.disabled {
+  background-color: #ccc;
+  color: #888;
+  /* cursor: not-allowed; */ /* Allow clicking */
+  /* pointer-events: none; */ /* Allow clicking */
+  opacity: 0.7;
+}
+
+.config-btn {
+  padding: 10px;
+  background-color: #ffc107; /* Yellow square */
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0; /* Prevent config button from shrinking */
+}
+
+.config-btn:hover {
+  background-color: #e0a800;
+}
+
+/* Configuration Panel */
+.config-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  max-width: 90%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  padding: 25px;
+  z-index: 1100;
+  transition: opacity 0.3s, visibility 0.3s;
+  border: 1px solid #ddd;
+}
+
+.config-panel.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.close-config-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #888;
+  cursor: pointer;
+}
+
+.config-section {
+  margin-bottom: 20px;
+}
+
+.config-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.config-section h4 i {
+  margin-right: 8px;
+  color: #0d6efd;
+}
+
+.color-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.color-option:hover {
+  border-color: #aaa;
+}
+
+.color-option.active {
+  border-color: #0d6efd; /* Blue border for active */
+}
+
+.color-option.dark-mode {
+  border: 1px solid #eee; /* Border for dark color */
+}
+
+#font-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.size-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.size-control button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.size-control button:hover {
+  background-color: #e9ecef;
+}
+
+.size-control span {
+  font-size: 14px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.reset-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Adjacent Chapter Links */
+.adjacent-chapters {
+  display: flex;
+  gap: 15px; /* Add gap */
+  margin-bottom: 20px;
+  padding: 10px 0;
+  border-top: 1px dotted #ccc;
+  border-bottom: 1px dotted #ccc;
+}
+
+.adjacent-link {
+  flex-grow: 1.5; /* Increase flex-grow to make them longer (1.5 times default share) */
+  flex-basis: 0; /* Allow shrinking/growing from 0 */
+  text-align: center;
+  padding: 8px 15px; /* Slightly more padding */
+  margin: 0; /* Remove margin as gap handles spacing */
+  border-radius: 4px;
+
+  background-color: transparent; /* No background */
+  border: 1px solid #6c757d; /* Gray border initially */
+  color: #cccccc; /* White/Light gray text */
+
+  text-decoration: none;
+  font-size: 14px; /* Increased font size */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s, border-color 0.3s; /* Add transitions */
+  min-width: 100px; /* Add a minimum width */
+}
+
+.adjacent-link:hover {
+  /* background-color: #e9ecef; */ /* Remove background hover */
+  color: #15e3f6; /* Dark blue text on hover */
+  border-color: #39e7f7; /* Dark blue border on hover */
+}
+
+.adjacent-link.disabled {
+  color: #6c757d; /* Keep text color for disabled */
+  background-color: transparent; /* Ensure no background */
+  border-color: #495057; /* Darker border for disabled */
+  cursor: default;
+  visibility: hidden;
+}
+
+/* Remove Dark Mode specific overrides for adjacent links as they are now styled for dark bg */
+/* body.dark-mode .adjacent-link { ... } */
+/* body.dark-mode .adjacent-link:hover { ... } */
+/* body.dark-mode .adjacent-link.disabled { ... } */
+
+/* Loading Placeholder */
+.loading-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 18px;
+  color: #888;
+}
+
+.loading-placeholder i {
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+/* KEEP dark-mode rules for elements NOT directly controlled by JS */
+/* Example: Keep button color changes if desired */
+body.dark-mode .nav-btn {
+  /* Keep using dark-mode class for context if needed */
+  background-color: #5cb85c;
+  color: #212529;
+}
+/* ... etc for other elements like config panel if needed ... */
+
+/* Override general body font settings if needed, but JS controls content */
+/* body {
+    font-family: ...;
+    font-size: ...;
+    line-height: ...;
+} */
+
+/* Footer Styling for Chapter Page */
+.chapter-footer {
+  background-color: #131313;
+  color: #aaaaaa;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 30px;
+  border-top: 1px solid #333;
+}
+
+.chapter-footer .container {
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+.footer-logo {
+  margin-bottom: 15px;
+}
+
+.footer-logo h1 {
+  color: #ffffff;
+  font-size: 28px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.footer-logo span {
+  color: #ffc107; /* Yellow accent */
+}
+
+.footer-description {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #aaaaaa;
+}
+
+.copyright {
+  font-size: 12px;
+  color: #777777;
+}
+
+.save-chapter-btn {
+  position: fixed;
+  top: 100px;
+  right: 0;
+  z-index: 1000;
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.save-chapter-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.save-chapter-btn.saved {
+  background-color: #f44336;
+}
+
+.save-chapter-btn.saved:hover {
+  background-color: #d32f2f;
+}
+
+.save-chapter-btn i {
+  font-size: 16px;
+}
+
+/* Xóa media query cũ vì không cần thiết nữa */
+@media (min-width: 1200px) {
+  .save-chapter-btn {
+    right: 0; /* Luôn sát lề phải */
+  }
+}
+
+/* Scroll to Top Button */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 70px; /* Adjust to be above footer or near bottom nav */
+  right: 30px;
+  width: 45px;
+  height: 45px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  display: flex; /* Use flexbox for centering */
+  flex-direction: column; /* Stack icon and text vertically */
+  align-items: center; /* Center items horizontally */
+  justify-content: center; /* Center items vertically */
+  font-size: 12px; /* Font size for "TOP" text */
+  opacity: 0; /* Hidden by default */
+  visibility: hidden; /* Hidden by default */
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out,
+    background-color 0.2s;
+  z-index: 1000;
+  padding: 5px; /* Add some padding */
+  line-height: 1.2; /* Adjust line height for text */
+}
+
+.scroll-to-top-btn i {
+  font-size: 16px; /* Icon size */
+  margin-bottom: 2px; /* Space between icon and text */
+}
+
+.scroll-to-top-btn span {
+  display: block; /* Ensure span takes its own line */
+}
+
+.scroll-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-to-top-btn:hover {
+  background-color: rgba(0, 0, 0, 0.9); /* Darker on hover */
+}
+
+.ck-editor__editable {
+  min-height: 400px;
+  resize: none;
+  overflow: auto;
+  line-height: 1.4 !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+  border: 1px solid #c4c4c4;
+  min-width: 0;
+}
+
+.ck.ck-editor {
+  width: 100% !important;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+
+/* Make editor resizable */
+.ck-editor__editable_inline {
+  resize: horizontal;
+  overflow: auto;
+  border: 1px solid #ccc;
+  min-width: 300px;
+  max-width: 100%;
+}
+
+/* Style for form inputs */
+.form-group {
+  margin-bottom: 15px;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .add-chapter-container,
+  .add-chapter-wrapper {
+    width: 100%;
+    min-width: auto;
+    padding: 10px;
+    resize: none;
+  }
+
+  .add-chapter-container::after {
+    display: none;
+  }
+}
+
+.document-editor__editable,
+.document-editor__editable p,
+.document-editor__editable div,
+.document-editor__editable br {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}

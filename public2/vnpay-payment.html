@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thanh toán VNPAY (Giả lập)</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/coins.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        background: #f6f8fa;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+      .vnpay-main {
+        max-width: 1100px;
+        margin: 40px auto 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 16px #e0e0e0;
+        padding: 0 0 40px 0;
+        overflow: hidden;
+      }
+      .vnpay-header {
+        background: #f7fafd;
+        padding: 24px 32px 12px 32px;
+        border-bottom: 1px solid #e3e3e3;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .vnpay-logo {
+        width: 110px;
+        height: auto;
+        min-width: 90px;
+        max-width: 140px;
+        margin-bottom: 0;
+      }
+      .vnpay-title {
+        font-size: 1.35em;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #1a237e;
+      }
+      .vnpay-step {
+        display: none;
+        padding: 48px 64px 0 64px;
+      }
+      .vnpay-step.active {
+        display: block;
+      }
+      .vnpay-method-list {
+        margin-top: 12px;
+      }
+      .vnpay-method-btn {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e3e3e3;
+        border-radius: 8px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+        font-size: 1.08em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: box-shadow 0.2s, border 0.2s;
+        box-shadow: 0 1px 2px #f0f0f0;
+      }
+      .vnpay-method-btn.selected,
+      .vnpay-method-btn:hover {
+        border: 2px solid #1976d2;
+        background: #f0f7ff;
+        box-shadow: 0 2px 8px #e3eaff;
+      }
+      .vnpay-method-btn .icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        margin-right: 18px;
+      }
+      .vnpay-method-btn .right-icon {
+        margin-left: auto;
+        font-size: 1.2em;
+        color: #bdbdbd;
+      }
+      .vnpay-bank-list {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        max-height: 220px;
+        overflow-y: auto;
+        margin-bottom: 18px;
+      }
+      .vnpay-bank-item {
+        background: #fff;
+        border: 1.5px solid #e3e3e3;
+        border-radius: 8px;
+        padding: 8px 4px 4px 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: border 0.2s, box-shadow 0.2s;
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .vnpay-bank-item.selected,
+      .vnpay-bank-item:hover {
+        border: 2px solid #1976d2;
+        box-shadow: 0 2px 8px #e3eaff;
+      }
+      .vnpay-bank-logo {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        margin-bottom: 4px;
+      }
+      .vnpay-bank-name {
+        font-size: 0.95em;
+        color: #222;
+        font-weight: 500;
+      }
+      .vnpay-search {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #e3e3e3;
+        margin-bottom: 10px;
+        font-size: 1em;
+      }
+      .vnpay-btn {
+        width: 100%;
+        margin-top: 18px;
+        font-size: 1.1em;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 10px 0;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        transition: background 0.2s;
+      }
+      .vnpay-btn:disabled {
+        background: #bdbdbd;
+        cursor: not-allowed;
+      }
+      .vnpay-btn-secondary {
+        background: #e3e3e3;
+        color: #333;
+        margin-top: 10px;
+      }
+      .vnpay-form-group {
+        margin-bottom: 20px;
+      }
+      .vnpay-form-group label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+      }
+      .vnpay-otp-input {
+        letter-spacing: 10px;
+        font-size: 1.25em;
+        text-align: center;
+        font-weight: 600;
+        background: #fafdff;
+        border: 1.5px solid #bfc9d8;
+        border-radius: 7px;
+        padding: 12px 0;
+        margin-bottom: 2px;
+        transition: border 0.2s;
+      }
+      .vnpay-otp-input:focus {
+        border: 2px solid #1976d2;
+        background: #f0f7ff;
+      }
+      .vnpay-note {
+        color: #e53935;
+        font-size: 0.98em;
+        margin-top: 8px;
+        text-align: center;
+      }
+      .vnpay-footer {
+        background: #f7fafd;
+        border-top: 1px solid #e3e3e3;
+        padding: 18px 32px 10px 32px;
+        font-size: 0.98em;
+        color: #607d8b;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .vnpay-footer .footer-left {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .vnpay-footer .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .vnpay-footer a {
+        color: #1976d2;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .vnpay-footer .footer-icon {
+        font-size: 1.2em;
+        margin-right: 6px;
+      }
+      .vnpay-input {
+        width: 100%;
+        border: 1.5px solid #bfc9d8;
+        border-radius: 7px;
+        padding: 10px 14px;
+        font-size: 1.08em;
+        margin-bottom: 2px;
+        background: #fafdff;
+        transition: border 0.2s;
+        outline: none;
+      }
+      .vnpay-input:focus {
+        border: 2px solid #1976d2;
+        background: #f0f7ff;
+      }
+      .vnpay-order-info {
+        flex: 1;
+        min-width: 320px !important;
+        max-width: 400px !important;
+      }
+      .vnpay-form-col {
+        flex: 2;
+        min-width: 400px !important;
+        max-width: 520px !important;
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px 40px 32px 40px;
+        box-shadow: 0 2px 10px #f0f0f0;
+      }
+      @media (max-width: 1200px) {
+        .vnpay-main {
+          max-width: 100%;
+        }
+        .vnpay-step {
+          padding: 24px 8px 0 8px;
+        }
+      }
+      @media (max-width: 900px) {
+        .vnpay-step > div {
+          flex-direction: column !important;
+          gap: 18px !important;
+        }
+        .vnpay-order-info,
+        .vnpay-form-col {
+          max-width: 100% !important;
+          min-width: 0 !important;
+        }
+        .vnpay-form-col {
+          padding: 24px 8px 18px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="vnpay-main">
+      <div
+        class="vnpay-header"
+        style="display: flex; align-items: center; gap: 24px"
+      >
+        <img
+          src="images/banks/logo_vnpay.png"
+          alt="VNPAY Logo"
+          class="vnpay-logo"
+          style="width: 110px; height: auto; min-width: 90px; max-width: 140px"
+        />
+        <div
+          class="vnpay-title"
+          style="margin-bottom: 0; font-size: 1.35em; font-weight: 600"
+        >
+          Chọn phương thức thanh toán
+        </div>
+      </div>
+      <!-- Bước 1: Chọn phương thức -->
+      <div class="vnpay-step active" id="step-method">
+        <div class="vnpay-method-list">
+          <div
+            class="vnpay-method-btn selected"
+            id="method-bank"
+            onclick="selectMethod('bank')"
+          >
+            <span class="icon"><i class="fas fa-university"></i></span>
+            Thẻ nội địa và tài khoản ngân hàng
+            <span class="right-icon"><i class="fas fa-chevron-right"></i></span>
+          </div>
+          <div
+            class="vnpay-method-btn"
+            id="method-qr"
+            onclick="selectMethod('qr')"
+          >
+            <span class="icon"
+              ><img src="images/banks/icon_qr.png" style="width: 28px"
+            /></span>
+            <span style="display: inline-block; line-height: 1.2">
+              Ứng dụng thanh toán hỗ trợ<br />
+              <span style="color: #d32f2f; font-weight: 700; font-size: 1.08em"
+                >VNPAYQR</span
+              >
+            </span>
+          </div>
+          <div
+            class="vnpay-method-btn"
+            id="method-card"
+            onclick="selectMethod('card')"
+          >
+            <span class="icon"><i class="fas fa-credit-card"></i></span>
+            Thẻ thanh toán quốc tế
+          </div>
+        </div>
+        <button class="vnpay-btn" id="btn-method-next" onclick="showBankList()">
+          Tiếp tục
+        </button>
+        <button class="vnpay-btn vnpay-btn-secondary" onclick="goBack()">
+          Quay lại
+        </button>
+      </div>
+      <!-- Bước 2: Chọn ngân hàng -->
+      <div class="vnpay-step" id="step-bank">
+        <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 10px">
+          Chọn ngân hàng thanh toán
+        </div>
+        <input
+          class="vnpay-search"
+          id="bankSearch"
+          placeholder="Tìm kiếm..."
+          oninput="filterBanks()"
+        />
+        <div class="vnpay-bank-list" id="bankList"></div>
+        <button
+          class="vnpay-btn"
+          id="btn-bank-next"
+          onclick="nextStep('step-card')"
+          disabled
+        >
+          Tiếp tục
+        </button>
+        <button
+          class="vnpay-btn vnpay-btn-secondary"
+          onclick="backStep('step-method')"
+        >
+          Quay lại
+        </button>
+      </div>
+      <!-- Bước 3: Nhập thông tin thẻ -->
+      <div class="vnpay-step" id="step-card">
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 48px;
+            max-width: 1000px;
+            margin: 0 auto;
+          "
+        >
+          <!-- Cột trái: Thông tin thanh toán -->
+          <div class="vnpay-order-info">
+            <div
+              style="font-weight: 600; font-size: 1.13em; margin-bottom: 16px"
+            >
+              Thông tin thanh toán
+            </div>
+            <div style="margin-bottom: 10px">
+              Mã gói:
+              <span
+                id="orderPackageId"
+                style="float: right; font-weight: 500; color: #1976d2"
+              ></span>
+            </div>
+            <div style="margin-bottom: 10px">
+              Số tiền thanh toán:
+              <span
+                id="orderAmount"
+                style="float: right; font-weight: 600; color: #e53935"
+              ></span>
+            </div>
+            <div style="margin-bottom: 10px">
+              Giá trị gói:
+              <span
+                id="orderCoins"
+                style="float: right; font-weight: 500; color: #173a7c"
+              ></span>
+            </div>
+            <div style="margin-bottom: 10px">
+              Phí giao dịch:
+              <span style="float: right; font-weight: 500">0đ</span>
+            </div>
+          </div>
+          <!-- Cột phải: Form nhập thẻ -->
+          <div class="vnpay-form-col">
+            <div
+              class="vnpay-title"
+              style="
+                font-size: 1.25em;
+                color: #173a7c;
+                font-weight: 700;
+                margin-bottom: 22px;
+              "
+            >
+              Thanh toán qua <span id="selectedBankName">Ngân hàng</span>
+            </div>
+            <div class="vnpay-form-group">
+              <label
+                for="cardNumber"
+                style="font-weight: 600; display: block; margin-bottom: 6px"
+                >Số thẻ</label
+              >
+              <input
+                type="text"
+                id="cardNumber"
+                class="form-control vnpay-input"
+                placeholder="Nhập số thẻ"
+                maxlength="19"
+              />
+            </div>
+            <div class="vnpay-form-group">
+              <label
+                for="cardName"
+                style="font-weight: 600; display: block; margin-bottom: 6px"
+                >Tên chủ thẻ</label
+              >
+              <input
+                type="text"
+                id="cardName"
+                class="form-control vnpay-input"
+                placeholder="Nhập tên chủ thẻ (không dấu)"
+              />
+            </div>
+            <div class="vnpay-form-group">
+              <label
+                for="cardDate"
+                style="font-weight: 600; display: block; margin-bottom: 6px"
+                >Ngày phát hành</label
+              >
+              <input
+                type="text"
+                id="cardDate"
+                class="form-control vnpay-input"
+                placeholder="DD/MM/YYYY"
+                maxlength="10"
+                readonly
+              />
+            </div>
+            <button
+              class="vnpay-btn"
+              id="btnCardNext"
+              style="margin-top: 18px"
+              onclick="nextStep('step-otp')"
+              disabled
+            >
+              Tiếp tục
+            </button>
+            <button
+              class="vnpay-btn vnpay-btn-secondary"
+              onclick="backStep('step-bank')"
+            >
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Bước 4: Nhập OTP -->
+      <div class="vnpay-step" id="step-otp">
+        <div
+          class="vnpay-title"
+          style="
+            font-size: 1.25em;
+            color: #173a7c;
+            font-weight: 700;
+            margin-bottom: 18px;
+          "
+        >
+          Xác thực OTP
+        </div>
+        <div
+          class="vnpay-form-group"
+          style="max-width: 320px; margin: 0 auto 20px auto"
+        >
+          <label
+            for="otpInput"
+            style="
+              font-weight: 600;
+              display: block;
+              margin-bottom: 8px;
+              text-align: center;
+            "
+            >OTP đã gửi về số điện thoại đăng ký:</label
+          >
+          <input
+            type="text"
+            id="otpInput"
+            class="form-control vnpay-input vnpay-otp-input"
+            maxlength="6"
+            placeholder="Nhập OTP"
+            style="text-align: center; font-size: 1.25em; letter-spacing: 10px"
+          />
+          <div
+            style="
+              color: #888;
+              font-size: 0.98em;
+              text-align: center;
+              margin-top: 8px;
+            "
+          >
+            Vui lòng nhập 6 số OTP để xác nhận giao dịch.
+          </div>
+        </div>
+        <button
+          class="vnpay-btn"
+          style="max-width: 320px; margin: 0 auto 12px auto; display: block"
+          onclick="finishPayment()"
+        >
+          Thanh toán
+        </button>
+        <button
+          class="vnpay-btn vnpay-btn-secondary"
+          style="max-width: 320px; margin: 0 auto; display: block"
+          onclick="backStep('step-card')"
+        >
+          Quay lại
+        </button>
+      </div>
+      <!-- Bước 5: Kết quả -->
+      <div class="vnpay-step" id="step-result">
+        <div class="vnpay-title" id="resultTitle">Thanh toán thành công!</div>
+        <div style="text-align: center; margin: 16px 0">
+          <i class="fas fa-check-circle fa-3x" style="color: #43a047"></i>
+          <div style="margin-top: 12px; font-size: 1.1em">
+            Cảm ơn bạn đã sử dụng dịch vụ.
+          </div>
+        </div>
+        <button class="vnpay-btn" onclick="goToCoins()">Về trang gói xu</button>
+      </div>
+      <!-- Footer -->
+      <div class="vnpay-footer">
+        <div class="footer-left">
+          <span
+            ><i class="fas fa-phone footer-icon"></i>
+            <a href="tel:1900555577">1900.5555.77</a></span
+          >
+          <span
+            ><i class="fas fa-envelope footer-icon"></i>
+            <a href="mailto:hotrovnpay@vnpay.vn">hotrovnpay@vnpay.vn</a></span
+          >
+        </div>
+        <div class="footer-right">
+          <span><i class="fas fa-lock footer-icon"></i> Secure GlobalSign</span>
+          <span>PCI DSS COMPLIANT</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Danh sách ngân hàng mẫu (giả lập, có thể thêm bớt)
+      const BANKS = [
+        {
+          code: "VCB",
+          name: "Vietcombank",
+          logo: "images/banks/Vietcombank-01.png",
+        },
+        {
+          code: "CTG",
+          name: "VietinBank",
+          logo: "images/banks/Vietinbank-01.png",
+        },
+        { code: "BIDV", name: "BIDV", logo: "images/banks/BIDV-01.png" },
+        {
+          code: "AGRIBANK",
+          name: "Agribank",
+          logo: "images/banks/Agribank-logo-01.png",
+        },
+        {
+          code: "SACOMBANK",
+          name: "Sacombank",
+          logo: "images/banks/logo-ngan-hang-Sacombank-01.png",
+        },
+        {
+          code: "TECHCOMBANK",
+          name: "Techcombank",
+          logo: "images/banks/Techcombank-01.png",
+        },
+        {
+          code: "MB",
+          name: "MB",
+          logo: "images/banks/logo-ngan-hang-MB-01.png",
+        },
+        {
+          code: "ACB",
+          name: "ACB",
+          logo: "images/banks/logo-ngan-hang-ACB-PNG.png",
+        },
+        { code: "VPBANK", name: "VPBank", logo: "images/banks/VPbank-01.png" },
+        { code: "DONGA", name: "DongA Bank", logo: "images/banks/DAB.png" },
+        { code: "SHB", name: "SHB", logo: "images/banks/SHB-01.png" },
+        {
+          code: "HSBC",
+          name: "HSBC",
+          logo: "images/banks/HSBC-bank-logo-01.png",
+        },
+        {
+          code: "TPBANK",
+          name: "TPBank",
+          logo: "images/banks/TPbank-logo-01.png",
+        },
+        { code: "NCB", name: "NCB", logo: "images/banks/NCB.png" },
+        {
+          code: "EXIMBANK",
+          name: "Eximbank",
+          logo: "images/banks/Eximbank-logo-01.png",
+        },
+        { code: "OCB", name: "OCB", logo: "images/banks/OCB.png" },
+        { code: "VIB", name: "VIB", logo: "images/banks/VIB-bank-logo-01.png" },
+        { code: "SCB", name: "SCB", logo: "images/banks/SCB logo-01.png" },
+        { code: "ABBANK", name: "ABBANK", logo: "images/banks/ABB.png" },
+        {
+          code: "SAIGONBANK",
+          name: "Saigonbank",
+          logo: "images/banks/SGB.png",
+        },
+      ];
+      let selectedBank = null;
+      // Hiển thị danh sách ngân hàng
+      function renderBankList(filter = "") {
+        const list = document.getElementById("bankList");
+        list.innerHTML = "";
+        let found = false;
+        BANKS.forEach((bank) => {
+          if (filter && !bank.name.toLowerCase().includes(filter.toLowerCase()))
+            return;
+          found = true;
+          const div = document.createElement("div");
+          div.className =
+            "vnpay-bank-item" + (selectedBank === bank.code ? " selected" : "");
+          div.innerHTML = `<img src="${bank.logo}" class="vnpay-bank-logo"/><div class="vnpay-bank-name">${bank.name}</div>`;
+          div.onclick = () => {
+            selectedBank = bank.code;
+            document.getElementById("btn-bank-next").disabled = false;
+            renderBankList(document.getElementById("bankSearch").value);
+          };
+          list.appendChild(div);
+        });
+        if (!found) {
+          list.innerHTML =
+            '<div style="grid-column:1/-1;text-align:center;color:#888;padding:16px;">Không tìm thấy ngân hàng</div>';
+        }
+      }
+      function filterBanks() {
+        renderBankList(document.getElementById("bankSearch").value);
+      }
+      function selectMethod(method) {
+        // Chỉ cho phép chọn bank, các phương thức khác chỉ là demo
+        document.getElementById("method-bank").classList.add("selected");
+        document.getElementById("method-qr").classList.remove("selected");
+        document.getElementById("method-card").classList.remove("selected");
+      }
+      function showBankList() {
+        // Chuyển sang bước chọn ngân hàng
+        document
+          .querySelectorAll(".vnpay-step")
+          .forEach((e) => e.classList.remove("active"));
+        document.getElementById("step-bank").classList.add("active");
+        renderBankList();
+        selectedBank = null;
+        document.getElementById("btn-bank-next").disabled = true;
+      }
+      function nextStep(step) {
+        document
+          .querySelectorAll(".vnpay-step")
+          .forEach((e) => e.classList.remove("active"));
+        document.getElementById(step).classList.add("active");
+        if (step === "step-card") {
+          // Hiển thị tên ngân hàng đã chọn
+          const bank = BANKS.find((b) => b.code === selectedBank);
+          document.getElementById("selectedBankName").textContent = bank
+            ? bank.name
+            : "Ngân hàng";
+          // Set ngày phát hành
+          setCurrentCardDate();
+        }
+      }
+      function backStep(step) {
+        document
+          .querySelectorAll(".vnpay-step")
+          .forEach((e) => e.classList.remove("active"));
+        document.getElementById(step).classList.add("active");
+      }
+      function finishPayment() {
+        const otp = document.getElementById("otpInput").value.trim();
+        if (otp.length !== 6) {
+          alert("Vui lòng nhập OTP gồm 6 số!");
+          return;
+        }
+        document
+          .querySelectorAll(".vnpay-step")
+          .forEach((e) => e.classList.remove("active"));
+        document.getElementById("step-result").classList.add("active");
+      }
+      function goToCoins() {
+        window.location.href = "user-coins.html";
+      }
+      function goBack() {
+        window.history.back();
+      }
+      // Hiển thị thông tin đơn hàng ở bước nhập thẻ
+      (function setOrderInfo() {
+        const params = new URLSearchParams(window.location.search);
+        const packageId = params.get("packageId") || "---";
+        const coins = parseInt(params.get("coins")) || 0;
+        const bonus = parseInt(params.get("bonus")) || 0;
+        const price = params.get("price") || "---";
+        document.getElementById("orderPackageId").textContent = packageId;
+        document.getElementById("orderAmount").textContent =
+          Number(price).toLocaleString("vi-VN") + "đ";
+        document.getElementById("orderCoins").textContent =
+          coins + bonus + " xu";
+      })();
+      function setCurrentCardDate() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, "0");
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const year = now.getFullYear();
+        document.getElementById("cardDate").value = `${day}/${month}/${year}`;
+      }
+      // Chỉ cho phép bấm tiếp tục khi đã nhập đủ số thẻ và tên chủ thẻ
+      (function enableCardNext() {
+        const cardNumber = document.getElementById("cardNumber");
+        const cardName = document.getElementById("cardName");
+        const btn = document.getElementById("btnCardNext");
+        function check() {
+          btn.disabled = !(
+            cardNumber.value.trim().length > 0 &&
+            cardName.value.trim().length > 0
+          );
+        }
+        cardNumber.addEventListener("input", check);
+        cardName.addEventListener("input", check);
+      })();
+      // --- BỔ SUNG: GỌI API CỘNG XU KHI THANH TOÁN THÀNH CÔNG ---
+      (async function autoDepositCoins() {
+        // Chỉ thực hiện khi đang ở bước kết quả/thành công
+        const params = new URLSearchParams(window.location.search);
+        const packageId = params.get("packageId");
+        const coins = parseInt(params.get("coins")) || 0;
+        const bonus = parseInt(params.get("bonus")) || 0;
+        const price = parseInt(params.get("price")) || 0;
+        const totalCoins = coins + bonus;
+        const token = localStorage.getItem("auth_token");
+        // Kiểm tra đủ điều kiện
+        if (!packageId || !totalCoins || !price || !token) return;
+        // Đảm bảo chỉ gọi 1 lần (tránh reload gọi lại)
+        if (window.__vnpay_deposit_done) return;
+        window.__vnpay_deposit_done = true;
+        try {
+          const body = {
+            packageId: packageId,
+            paymentMethod: "vnpay",
+            amount: price,
+            coins: totalCoins,
+          };
+          const resp = await fetch("/api/transactions/deposit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(body),
+          });
+          const data = await resp.json();
+          if (!resp.ok || !data.success) {
+            alert(data.message || "Lỗi khi cộng xu!");
+          } else {
+            // Có thể cập nhật UI hoặc thông báo thành công nếu muốn
+            // alert("Xu đã được cộng vào tài khoản!");
+          }
+        } catch (err) {
+          console.error("Lỗi cộng xu:", err);
+        }
+      })();
+    </script>
+  </body>
+</html>

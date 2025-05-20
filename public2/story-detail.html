@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Chi tiết truyện - Web Đọc Truyện</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/comments.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Main Content -->
+    <main>
+      <div class="container">
+        <div class="story-detail" id="story-detail">
+          <!-- Loading placeholder -->
+          <div class="loading" id="loading">Đang tải...</div>
+
+          <div class="page-layout">
+            <!-- Main content -->
+            <div class="main-content">
+              <!-- Story information will be loaded dynamically by JavaScript -->
+              <div
+                class="story-info-container"
+                id="story-info-container"
+                style="display: none"
+              >
+                <h2 class="section-title">Thông tin truyện</h2>
+                <div class="story-header">
+                  <div class="story-cover-container">
+                    <div class="story-cover">
+                      <img id="story-cover" src="" alt="" />
+                    </div>
+                    <div class="story-basic-info">
+                      <div class="story-status" id="story-status"></div>
+                      <p class="author">
+                        Tác giả: <span id="story-author"></span>
+                      </p>
+                      <p class="genres-label">Thể loại:</p>
+                      <div class="story-genres" id="story-genres">
+                        <!-- Genres will be loaded dynamically by JavaScript -->
+                      </div>
+                      <div class="story-stats">
+                        <span> Lượt xem: <span id="story-views"></span> </span>
+                      </div>
+                      <div class="story-status-info">
+                        <span
+                          >Trạng thái: <span id="story-status-text"></span
+                        ></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="story-info">
+                    <h1 id="story-title"></h1>
+                    <div class="star-rating">
+                      <div class="stars">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                        <span class="star" data-value="6">★</span>
+                        <span class="star" data-value="7">★</span>
+                        <span class="star" data-value="8">★</span>
+                        <span class="star" data-value="9">★</span>
+                        <span class="star" data-value="10">★</span>
+                        <span
+                          class="rating-description"
+                          id="rating-description"
+                        ></span>
+                      </div>
+                      <div class="rating-text">
+                        Đánh giá: <span id="rating-value">0</span>/10 từ
+                        <span id="rating-count">0</span> lượt
+                      </div>
+                    </div>
+                    <div class="story-actions">
+                      <button id="follow-btn" class="btn btn-outline">
+                        <i class="far fa-bookmark"></i> Theo dõi
+                      </button>
+                      <button id="start-reading-btn" class="btn btn-primary">
+                        <i class="fas fa-book-open"></i> Đọc truyện
+                      </button>
+                    </div>
+                    <div class="story-description">
+                      <h3>Mô tả</h3>
+                      <div class="description-content">
+                        <p id="story-description" class="collapsed"></p>
+                        <button id="show-more-btn" class="show-more-btn">
+                          Xem thêm
+                        </button>
+                      </div>
+                    </div>
+                    <div class="latest-chapters">
+                      <h3>Các chương mới nhất</h3>
+                      <div
+                        class="latest-chapters-list"
+                        id="latest-chapters-list"
+                      >
+                        <!-- Latest chapters will be loaded dynamically -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="chapter-section">
+                  <h2 class="section-title">Danh sách chương</h2>
+                  <div class="chapter-list" id="chapter-list">
+                    <!-- Chapters will be loaded dynamically -->
+                  </div>
+                  <div class="pagination" id="chapter-pagination">
+                    <!-- Pagination will be generated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Thêm phần bình luận -->
+                <div class="comment-section">
+                  <h2 class="section-title">Bình luận truyện</h2>
+
+                  <div class="comment-header">
+                    <div class="comment-count">
+                      <span id="total-comments">0</span> bình luận
+                    </div>
+                    <div class="comment-sort">
+                      <span>Sắp xếp theo:</span>
+                      <select id="comment-sort">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Form bình luận chính -->
+                  <div class="comment-form" id="main-comment-form">
+                    <div class="comment-avatar">
+                      <img
+                        id="current-user-avatar"
+                        src="/images/default-avatar.png"
+                        alt="Avatar"
+                        class="user-avatar"
+                      />
+                    </div>
+                    <div class="comment-form-wrapper">
+                      <div class="comment-input-wrapper">
+                        <textarea
+                          id="comment-input"
+                          class="comment-textarea"
+                          placeholder="Viết bình luận..."
+                          rows="1"
+                        ></textarea>
+                      </div>
+                      <div class="comment-form-actions">
+                        <button type="button" class="cancel-btn">Hủy</button>
+                        <button type="button" class="post-btn">Đăng</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Danh sách bình luận -->
+                  <div id="comment-list">
+                    <!-- Comments will be loaded dynamically -->
+                  </div>
+
+                  <!-- Container cho nút tải thêm bình luận -->
+                  <div
+                    class="load-more-container"
+                    style="text-align: center; margin: 20px 0"
+                  >
+                    <button
+                      id="load-more-comments"
+                      class="load-more-btn"
+                      style="
+                        padding: 8px 16px;
+                        background-color: #4267b2;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        width: 200px;
+                        font-size: 14px;
+                        font-weight: 500;
+                      "
+                    >
+                      Tải thêm bình luận
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right sidebar -->
+            <div class="story-sidebar">
+              <!-- Related Stories by Author -->
+              <div class="sidebar-form author-stories">
+                <h3 class="sidebar-title">Truyện cùng tác giả</h3>
+                <div class="author-stories-list" id="author-stories-list">
+                  <!-- Will be populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Top Stories -->
+              <div class="sidebar-form top-stories">
+                <h3 class="sidebar-title">Top truyện hay</h3>
+                <div class="top-stories-section">
+                  <div class="tab-buttons">
+                    <button class="tab-btn active" data-period="day">
+                      Ngày
+                    </button>
+                    <button class="tab-btn" data-period="month">Tháng</button>
+                    <button class="tab-btn" data-period="year">Năm</button>
+                  </div>
+                  <div class="top-stories-list" id="top-stories-list">
+                    <!-- Will be populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thể loại truyện (đã di chuyển ra ngoài) -->
+              <div class="sidebar-form genres-section">
+                <h3 class="sidebar-title">Thể Loại Truyện</h3>
+                <div class="genres-grid" id="genres-grid">
+                  <!-- Genres will be loaded here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Truyện cùng thể loại -->
+      <div class="container">
+        <div class="related-stories-section">
+          <h2 class="section-title" style="text-align: left; margin-top: 40px">
+            Truyện cùng thể loại
+          </h2>
+          <div class="related-stories-list" id="related-stories-list">
+            <!-- Related stories will be loaded dynamically -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>Web Đọc Truyện</h3>
+            <p>
+              Trang web đọc truyện chữ online miễn phí với nhiều thể loại đa
+              dạng.
+            </p>
+          </div>
+          <div class="footer-section">
+            <h3>Liên kết</h3>
+            <ul>
+              <li><a href="/">Trang chủ</a></li>
+              <li><a href="/stories">Danh sách truyện</a></li>
+              <li><a href="/about">Giới thiệu</a></li>
+              <li><a href="/contact">Liên hệ</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Liên hệ</h3>
+            <p><i class="fas fa-envelope"></i> Email: info@truyenhay.com</p>
+            <p><i class="fas fa-phone"></i> Điện thoại: 0123 456 789</p>
+            <div class="social-icons">
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2023 Web Đọc Truyện. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/story-detail.js"></script>
+    <script src="/js/comments.js"></script>
+    <script src="/js/related-stories.js"></script>
+  </body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản trị - Web Đọc Truyện</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      .stats-container {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 32px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .stat-card {
+        flex: 1 1 220px;
+        min-width: 220px;
+        max-width: 300px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 28px 0 18px 0;
+        transition: box-shadow 0.2s;
+      }
+      .stat-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+      }
+      .stat-icon {
+        font-size: 2.8rem;
+        margin-bottom: 10px;
+        color: #3b82f6;
+      }
+      .stat-info h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        text-align: center;
+      }
+      .stat-info p {
+        font-size: 2.1rem;
+        font-weight: bold;
+        margin: 0;
+        color: #222;
+        text-align: center;
+      }
+      @media (max-width: 900px) {
+        .stats-container {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .stat-card {
+          max-width: 100%;
+          margin-bottom: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body class="admin-page">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar">
+      <div class="sidebar-header">
+        <h2>TruyệnHay Admin</h2>
+      </div>
+      <ul class="admin-menu">
+        <li class="active">
+          <a href="index.html"
+            ><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</a
+          >
+        </li>
+        <li>
+          <a href="stories.html"><i class="fas fa-book"></i> Quản lý truyện</a>
+        </li>
+        <li>
+          <a href="chapters.html"
+            ><i class="fas fa-file-alt"></i> Quản lý chương</a
+          >
+        </li>
+        <li>
+          <a href="users.html"
+            ><i class="fas fa-users"></i> Quản lý người dùng</a
+          >
+        </li>
+        <li>
+          <a href="transactions.html"
+            ><i class="fas fa-money-bill-wave"></i> Quản lý giao dịch</a
+          >
+        </li>
+        <li>
+          <a href="genres.html"><i class="fas fa-tags"></i> Quản lý thể loại</a>
+        </li>
+        <li>
+          <a href="coin-packages.html"
+            ><i class="fas fa-coins"></i> Quản lý gói xu</a
+          >
+        </li>
+        <li class="sidebar-footer">
+          <a href="../index.html"
+            ><i class="fas fa-sign-out-alt"></i> Về trang chủ</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <div class="admin-header">
+        <div class="admin-header-left">
+          <h1>Bảng điều khiển</h1>
+        </div>
+        <div class="admin-header-right">
+          <div class="admin-user dropdown">
+            <span id="admin-username">Admin</span>
+            <div class="dropdown-content">
+              <a href="#" id="admin-logout">Đăng xuất</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-main">
+        <!-- Stats Cards -->
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-icon users">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Người dùng</h3>
+              <p id="user-count">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stories">
+              <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Truyện</h3>
+              <p id="story-count">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon chapters">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Chương</h3>
+              <p id="chapter-count">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-container">
+          <div class="chart-card">
+            <div
+              class="chart-header"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <h3>Xu đã bán</h3>
+              <span id="coinYearLabel" style="font-weight: 500; color: #444"
+                >Năm: 2025</span
+              >
+            </div>
+            <div class="chart-body">
+              <div class="chart-placeholder" id="coin-sales-chart">
+                <!-- Chart will be rendered by JavaScript -->
+                <div class="loading">Đang tải...</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div
+              class="chart-header"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <h3>Người dùng mới</h3>
+              <span id="currentYearLabel" style="font-weight: 500; color: #444"
+                >Năm: 2025</span
+              >
+            </div>
+            <div class="chart-body">
+              <div class="chart-placeholder" id="new-users-chart">
+                <!-- Chart will be rendered by JavaScript -->
+                <div class="loading">Đang tải...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="recent-container">
+          <div class="recent-card">
+            <div class="card-header">
+              <h3>Giao dịch gần đây</h3>
+              <a href="transactions.html" class="view-all">Xem tất cả</a>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Người dùng</th>
+                      <th>Loại</th>
+                      <th>Số xu</th>
+                      <th>Trạng thái</th>
+                      <th>Ngày</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-transactions">
+                    <!-- Recent transactions will be loaded dynamically by JavaScript -->
+                    <tr>
+                      <td colspan="6" class="text-center">Đang tải...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-common.js"></script>
+    <script src="../js/admin/dashboard.js"></script>
+  </body>
+</html>

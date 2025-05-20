@@ -1,0 +1,809 @@
+// Admin Chapters Management
+
+// Kiểm tra quyền admin
+function checkAdminAuth() {
+  // Thêm logic kiểm tra quyền admin ở đây
+  // Tạm thời luôn trả về true để phát triển
+  return true;
+}
+
+// Escape HTML để tránh XSS
+function escapeHtml(text) {
+  if (!text) return "";
+  return text
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Format date
+function formatDate(dateString) {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Tạo phân trang
+function createPagination(currentPage, totalPages, onPageChange) {
+  let html = '<ul class="pagination">';
+
+  // Nút Previous
+  if (currentPage > 1) {
+    html += `<li class="page-item"><a class="page-link" href="#" data-page="${
+      currentPage - 1
+    }">«</a></li>`;
+  } else {
+    html +=
+      '<li class="page-item disabled"><span class="page-link">«</span></li>';
+  }
+
+  // Các trang
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, startPage + 4);
+
+  for (let i = startPage; i <= endPage; i++) {
+    if (i === currentPage) {
+      html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+    } else {
+      html += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+    }
+  }
+
+  // Nút Next
+  if (currentPage < totalPages) {
+    html += `<li class="page-item"><a class="page-link" href="#" data-page="${
+      currentPage + 1
+    }">»</a></li>`;
+  } else {
+    html +=
+      '<li class="page-item disabled"><span class="page-link">»</span></li>';
+  }
+
+  html += "</ul>";
+
+  // Thêm sự kiện click cho các nút phân trang
+  setTimeout(() => {
+    document
+      .querySelectorAll(".pagination .page-link:not(.disabled)")
+      .forEach((link) => {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          const page = parseInt(this.dataset.page);
+          if (onPageChange && typeof onPageChange === "function") {
+            onPageChange(page);
+          }
+        });
+      });
+  }, 0);
+
+  return html;
+}
+
+// Biến toàn cục cho phân trang và lọc
+let currentPage = 1;
+let totalPages = 1;
+let pageSize = 10;
+let filterStatus = "pending";
+let filterStory = "";
+let searchKeyword = "";
+
+// DOM ready
+document.addEventListener("DOMContentLoaded", function () {
+  // Kiểm tra quyền admin
+  if (!checkAdminAuth()) return;
+
+  // Tải danh sách chương
+  loadChapters();
+
+  // Khởi tạo bộ lọc
+  initFilters();
+
+  // Khởi tạo sự kiện cho modal xem chi tiết
+  initChapterDetailModal();
+});
+
+// Khởi tạo bộ lọc
+function initFilters() {
+  // Bộ lọc trạng thái
+  const statusFilter = document.getElementById("chapter-status-filter");
+  if (statusFilter) {
+    statusFilter.addEventListener("change", function () {
+      filterStatus = this.value;
+      currentPage = 1; // Reset về trang đầu
+      loadChapters();
+    });
+  }
+
+  // Bộ lọc truyện
+  const storyFilter = document.getElementById("chapter-story-filter");
+  if (storyFilter) {
+    // Tải danh sách truyện
+    loadStoriesForFilter(storyFilter);
+
+    storyFilter.addEventListener("change", function () {
+      filterStory = this.value;
+      currentPage = 1; // Reset về trang đầu
+      loadChapters();
+    });
+  }
+
+  // Thanh tìm kiếm
+  const searchInput = document.getElementById("chapter-search");
+  if (searchInput) {
+    // Dùng debounce để tránh gọi quá nhiều request khi người dùng gõ
+    const debounceSearch = debounce(function () {
+      searchKeyword = searchInput.value.trim();
+      currentPage = 1; // Reset về trang đầu
+      loadChapters();
+    }, 500);
+
+    searchInput.addEventListener("input", debounceSearch);
+  }
+}
+
+// Tải danh sách truyện cho bộ lọc
+async function loadStoriesForFilter(selectElement) {
+  try {
+    // Gọi API để lấy danh sách truyện
+    const response = await fetch("/api/stories/admin/list", {
+      headers: {
+        // Bỏ tạm thời để phát triển
+        // "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const stories = data.stories || [];
+
+    // Thêm option "Tất cả truyện"
+    let html = `<option value="">Tất cả truyện</option>`;
+
+    // Thêm các truyện
+    stories.forEach((story) => {
+      html += `<option value="${story._id}">${escapeHtml(
+        story.title
+      )}</option>`;
+    });
+
+    selectElement.innerHTML = html;
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách truyện cho bộ lọc:", error);
+    selectElement.innerHTML = `<option value="">Không thể tải danh sách truyện</option>`;
+  }
+}
+
+// Khởi tạo sự kiện cho modal xem chi tiết
+function initChapterDetailModal() {
+  // Nút phê duyệt trong modal
+  const approveButton = document.getElementById("modal-approve-chapter");
+  if (approveButton) {
+    approveButton.addEventListener("click", function () {
+      const chapterId = this.dataset.id;
+      if (chapterId) {
+        approveChapter(chapterId);
+      }
+    });
+  }
+
+  // Nút từ chối trong modal
+  const rejectButton = document.getElementById("modal-reject-chapter");
+  if (rejectButton) {
+    rejectButton.addEventListener("click", function () {
+      const chapterId = this.dataset.id;
+      if (chapterId) {
+        // Hiển thị form lý do từ chối
+        showRejectReasonForm(chapterId);
+      }
+    });
+  }
+
+  // Form từ chối
+  const rejectForm = document.getElementById("reject-reason-form");
+  if (rejectForm) {
+    rejectForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const chapterId = document.getElementById("reject-chapter-id").value;
+      const reason = document.getElementById("reject-reason").value;
+      rejectChapter(chapterId, reason);
+    });
+  }
+}
+
+// Hiển thị form lý do từ chối
+function showRejectReasonForm(chapterId) {
+  document.getElementById("reject-chapter-id").value = chapterId;
+  document.getElementById("reject-reason").value = "";
+
+  // Ẩn modal chi tiết
+  $("#chapterDetailModal").modal("hide");
+
+  // Hiển thị modal lý do
+  $("#rejectReasonModal").modal("show");
+}
+
+// Tải danh sách chương
+async function loadChapters() {
+  const tableBody = document.getElementById("chapters-table-body");
+  if (!tableBody) return;
+
+  try {
+    // Hiển thị loading
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Đang tải...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    // Xây dựng URL với các tham số lọc
+    let apiUrl = `/api/chapters/admin/list?page=${currentPage}&limit=${pageSize}`;
+
+    if (filterStatus && filterStatus !== "all") {
+      apiUrl += `&status=${filterStatus}`;
+    }
+
+    if (filterStory) {
+      apiUrl += `&story=${filterStory}`;
+    }
+
+    if (searchKeyword) {
+      apiUrl += `&search=${encodeURIComponent(searchKeyword)}`;
+    }
+
+    // Gọi API để lấy danh sách chương
+    const response = await fetch(apiUrl, {
+      headers: {
+        // Bỏ tạm thời để phát triển
+        // "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const chapters = data.chapters || [];
+    totalPages = data.pagination?.totalPages || 1;
+
+    // Render chương
+    renderChapters(chapters, tableBody);
+
+    // Render phân trang
+    renderPagination();
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách chương:", error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center text-danger">
+          <i class="fas fa-exclamation-circle"></i> Đã xảy ra lỗi khi tải dữ liệu chương: ${error.message}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Render danh sách chương
+function renderChapters(chapters, tableBody) {
+  if (!chapters || !chapters.length) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center">
+          Không tìm thấy chương nào
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = "";
+
+  chapters.forEach((chapter) => {
+    const statusClass = getChapterStatusClass(chapter.status);
+    const statusText = getChapterStatusText(chapter.status);
+
+    const typeClass = chapter.isFree ? "badge-success" : "badge-primary";
+    const typeText = chapter.isFree ? "Miễn phí" : "VIP";
+
+    html += `
+      <tr>
+        <td>${chapter._id}</td>
+        <td>${escapeHtml(chapter.story.title)}</td>
+        <td>${escapeHtml(chapter.title)}</td>
+        <td>${chapter.number}</td>
+        <td><span class="badge ${typeClass}">${typeText}</span></td>
+        <td><span class="badge ${statusClass}">${statusText}</span></td>
+        <td>${formatDate(chapter.createdAt)}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-info view-chapter" data-id="${
+              chapter._id
+            }">
+              <i class="fas fa-eye"></i>
+            </button>
+            ${
+              chapter.status === "pending"
+                ? `
+              <button class="btn btn-sm btn-success approve-chapter" data-id="${chapter._id}">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm btn-danger reject-chapter" data-id="${chapter._id}">
+                <i class="fas fa-times"></i>
+              </button>
+            `
+                : ""
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tableBody.innerHTML = html;
+
+  // Thêm sự kiện cho các nút
+  attachChapterButtonEvents();
+}
+
+// Thêm sự kiện cho các nút
+function attachChapterButtonEvents() {
+  // Nút xem chi tiết
+  document.querySelectorAll(".view-chapter").forEach((button) => {
+    button.addEventListener("click", function () {
+      const chapterId = this.dataset.id;
+      viewChapterDetail(chapterId);
+    });
+  });
+
+  // Nút phê duyệt
+  document.querySelectorAll(".approve-chapter").forEach((button) => {
+    button.addEventListener("click", function () {
+      const chapterId = this.dataset.id;
+      approveChapter(chapterId);
+    });
+  });
+
+  // Nút từ chối
+  document.querySelectorAll(".reject-chapter").forEach((button) => {
+    button.addEventListener("click", function () {
+      const chapterId = this.dataset.id;
+      showRejectReasonForm(chapterId);
+    });
+  });
+}
+
+// Render phân trang
+function renderPagination() {
+  const paginationContainer = document.getElementById("chapters-pagination");
+  if (!paginationContainer) return;
+
+  paginationContainer.innerHTML = createPagination(
+    currentPage,
+    totalPages,
+    (page) => {
+      currentPage = page;
+      loadChapters();
+    }
+  );
+}
+
+// Xem chi tiết chương
+async function viewChapterDetail(chapterId) {
+  try {
+    // Hiển thị modal
+    $("#chapterDetailModal").modal("show");
+
+    // Cập nhật loading trong modal
+    document.getElementById("modal-chapter-content").innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Đang tải...</span>
+        </div>
+        <p class="mt-2">Đang tải nội dung chương...</p>
+      </div>
+    `;
+
+    // Gọi API để lấy thông tin chi tiết chương
+    const response = await fetch(`/api/chapters/${chapterId}`, {
+      headers: {
+        // Bỏ tạm thời để phát triển
+        // "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const chapter = await response.json();
+
+    // Cập nhật thông tin trong modal
+    document.getElementById("modal-chapter-id").textContent = chapter._id;
+    document.getElementById("modal-story-title").textContent =
+      chapter.story?.title || "N/A";
+    document.getElementById("modal-chapter-number").textContent =
+      chapter.number;
+    document.getElementById("modal-chapter-title").textContent = chapter.title;
+    document.getElementById("modal-chapter-author").textContent =
+      chapter.author?.username || "N/A";
+    document.getElementById("modal-chapter-date").textContent = formatDate(
+      chapter.createdAt
+    );
+    document.getElementById("modal-chapter-status").textContent =
+      getChapterStatusText(chapter.status);
+    document.getElementById("modal-chapter-free").textContent = chapter.isFree
+      ? "Có"
+      : "Không";
+
+    // Cập nhật nội dung chương
+    document.getElementById("modal-chapter-content").innerHTML =
+      formatChapterContent(chapter.content);
+
+    // Cập nhật buttons
+    const approveButton = document.getElementById("modal-approve-chapter");
+    const rejectButton = document.getElementById("modal-reject-chapter");
+
+    if (approveButton) approveButton.dataset.id = chapterId;
+    if (rejectButton) rejectButton.dataset.id = chapterId;
+
+    // Hiển thị hoặc ẩn buttons dựa vào trạng thái của chương
+    if (approveButton && rejectButton) {
+      if (chapter.status === "pending") {
+        approveButton.style.display = "inline-block";
+        rejectButton.style.display = "inline-block";
+      } else {
+        approveButton.style.display = "none";
+        rejectButton.style.display = "none";
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải chi tiết chương:", error);
+    document.getElementById("modal-chapter-content").innerHTML = `
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> Đã xảy ra lỗi khi tải chi tiết chương: ${error.message}
+      </div>
+    `;
+  }
+}
+
+// Phê duyệt chương
+async function approveChapter(chapterId) {
+  try {
+    // Hiển thị loader hoặc disabled button
+    const approveButton = document.getElementById("modal-approve-chapter");
+    const originalText = approveButton.innerHTML;
+    approveButton.disabled = true;
+    approveButton.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+    // Gọi API để phê duyệt chương
+    const response = await fetch(`/api/chapters/approve/${chapterId}`, {
+      method: "PUT",
+      headers: {
+        // Bỏ tạm thời để phát triển
+        // "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.msg || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    // Đóng modal
+    $("#chapterDetailModal").modal("hide");
+
+    // Hiển thị thông báo thành công
+    showToast(
+      "Phê duyệt thành công",
+      "Chương đã được phê duyệt và xuất bản.",
+      "success"
+    );
+
+    // Tải lại danh sách chương
+    loadChapters();
+  } catch (error) {
+    console.error("Lỗi khi phê duyệt chương:", error);
+    showToast(
+      "Lỗi phê duyệt",
+      `Không thể phê duyệt chương: ${error.message}`,
+      "error"
+    );
+  } finally {
+    // Khôi phục trạng thái ban đầu của button
+    const approveButton = document.getElementById("modal-approve-chapter");
+    if (approveButton) {
+      approveButton.disabled = false;
+      approveButton.innerHTML = '<i class="fas fa-check"></i> Phê duyệt';
+    }
+  }
+}
+
+// Từ chối chương
+async function rejectChapter(chapterId, reason) {
+  try {
+    // Hiển thị loader hoặc disabled button
+    const rejectForm = document.getElementById("reject-reason-form");
+    const submitButton = rejectForm.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+    // Validate reason
+    if (!reason || reason.trim() === "") {
+      throw new Error("Vui lòng nhập lý do từ chối");
+    }
+
+    // Gọi API để từ chối chương
+    const response = await fetch(`/api/chapters/reject/${chapterId}`, {
+      method: "PUT",
+      headers: {
+        // Bỏ tạm thời để phát triển
+        // "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reason }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.msg || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    // Đóng modal từ chối
+    $("#rejectReasonModal").modal("hide");
+
+    // Hiển thị thông báo thành công
+    showToast(
+      "Từ chối thành công",
+      "Chương đã bị từ chối với lý do đã nêu.",
+      "success"
+    );
+
+    // Tải lại danh sách chương
+    loadChapters();
+  } catch (error) {
+    console.error("Lỗi khi từ chối chương:", error);
+    showToast(
+      "Lỗi từ chối",
+      `Không thể từ chối chương: ${error.message}`,
+      "error"
+    );
+  } finally {
+    // Khôi phục trạng thái ban đầu của button
+    const rejectForm = document.getElementById("reject-reason-form");
+    const submitButton = rejectForm.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.innerHTML = "Xác nhận từ chối";
+    }
+  }
+}
+
+// Hiển thị thông báo toast
+function showToast(title, message, type = "info") {
+  // Tạo element toast nếu chưa có
+  if (!document.getElementById("toast-container")) {
+    const toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    toastContainer.className =
+      "toast-container position-fixed bottom-0 end-0 p-3";
+    document.body.appendChild(toastContainer);
+  }
+
+  // Tạo ID duy nhất cho toast
+  const toastId = `toast-${Date.now()}`;
+
+  // Xác định class cho loại toast
+  let typeClass = "bg-info text-white";
+  if (type === "success") typeClass = "bg-success text-white";
+  if (type === "error") typeClass = "bg-danger text-white";
+  if (type === "warning") typeClass = "bg-warning text-dark";
+
+  // Tạo HTML cho toast
+  const toastHtml = `
+    <div id="${toastId}" class="toast ${typeClass}" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">${title}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        ${message}
+      </div>
+    </div>
+  `;
+
+  // Thêm toast vào container
+  document
+    .getElementById("toast-container")
+    .insertAdjacentHTML("beforeend", toastHtml);
+
+  // Khởi tạo và hiển thị toast
+  const toastElement = document.getElementById(toastId);
+  const toast = new bootstrap.Toast(toastElement, {
+    autohide: true,
+    delay: 5000,
+  });
+  toast.show();
+
+  // Xóa toast sau khi ẩn
+  toastElement.addEventListener("hidden.bs.toast", function () {
+    toastElement.remove();
+  });
+}
+
+// Format nội dung chương
+function formatChapterContent(content) {
+  // Đảm bảo nội dung an toàn
+  const safeContent = escapeHtml(content);
+
+  // Thay thế dấu xuống dòng bằng thẻ paragraph
+  return safeContent
+    .split("\n\n")
+    .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+// Lấy class CSS cho trạng thái chương
+function getChapterStatusClass(status) {
+  switch (status) {
+    case "approved":
+      return "badge-success";
+    case "pending":
+      return "badge-warning";
+    case "rejected":
+      return "badge-danger";
+    default:
+      return "badge-secondary";
+  }
+}
+
+// Lấy text cho trạng thái chương
+function getChapterStatusText(status) {
+  switch (status) {
+    case "approved":
+      return "Đã duyệt";
+    case "pending":
+      return "Chờ duyệt";
+    case "rejected":
+      return "Đã từ chối";
+    default:
+      return "Không xác định";
+  }
+}
+
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function () {
+    const context = this;
+    const args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func.apply(context, args);
+    }, wait);
+  };
+}
+
+// Giả lập dữ liệu chương
+function generateMockChapters() {
+  return [
+    {
+      _id: "chap1",
+      story: {
+        _id: "story1",
+        title: "Đấu La Đại Lục",
+      },
+      title: "Chương 243: Tu luyện",
+      number: 243,
+      isFree: false,
+      status: "pending",
+      author: {
+        _id: "user2",
+        username: "reader123",
+      },
+      content:
+        "Đường Tam đứng trên đỉnh núi cao, nhìn xuống vực thẳm phía dưới. Gió lớn thổi qua, làm bay tóc anh, thân thể anh dưới cơn gió mạnh chút nào cũng không lay động.\n\nĐường Tam nhẹ thở ra một hơi, phân biệt rõ bốn phương và chậm rãi ngồi xuống vào tư thế thiền.\n\nAnh cảm nhận được sức mạnh đại tự nhiên trước mắt, từng tấc không khí trong trẻo như thủy tinh được anh thu vào trong cơ thể.\n\nLuyện công khi đứng một mình trên đỉnh núi là một cách tuyệt vời để tăng khả năng tập trung. Đường Tam đã đạt đến một cảnh giới mới trong tu luyện.",
+      createdAt: "2023-04-05T11:30:00Z",
+    },
+    {
+      _id: "chap2",
+      story: {
+        _id: "story2",
+        title: "Vũ Động Càn Khôn",
+      },
+      title: "Chương 156: Đột phá",
+      number: 156,
+      isFree: true,
+      status: "approved",
+      author: {
+        _id: "user3",
+        username: "bookworm",
+      },
+      content:
+        "Lâm Động ngẩng đầu nhìn lên bầu trời đầy sao, cảm giác được vô số năng lượng thiên địa đang vọt vào cơ thể mình.\n\nAnh biết mình sắp đột phá, đây là cơ hội ngàn năm có một.\n\nKhu rừng xung quanh yên tĩnh đến kỳ lạ, như thể ngay cả tự nhiên cũng đang nín thở chờ đợi khoảnh khắc này.\n\nVà rồi, như thể có một tiếng nổ vô hình trong cơ thể, Lâm Động cảm nhận được một dòng năng lượng vô tận tuôn trào ra từ khắp các lỗ chân lông.",
+      createdAt: "2023-04-05T10:45:00Z",
+    },
+    {
+      _id: "chap3",
+      story: {
+        _id: "story3",
+        title: "Tu Chân Liệt Truyện",
+      },
+      title: "Chương 78: Luyện công",
+      number: 78,
+      isFree: false,
+      status: "pending",
+      author: {
+        _id: "user5",
+        username: "storymaster",
+      },
+      content:
+        "Vương Lâm ngồi trong động phủ, trước mặt là một chiếc bàn đá, trên bàn đặt ba viên đan dược màu đỏ tươi như máu.\n\nAnh ta không vội vàng nuốt xuống mà ngắm nhìn những viên đan được làm tinh xảo đó, mỗi một viên đan đều là kết quả của hàng trăm loại dược liệu và quá trình luyện đan cực kỳ phức tạp.\n\nSau một hồi suy nghĩ, Vương Lâm quyết định bắt đầu. Anh cầm lấy viên đan thứ nhất, nuốt vào bụng.\n\nNgay lập tức, một luồng nhiệt nóng như lửa đốt lan tỏa khắp cơ thể anh ta...",
+      createdAt: "2023-04-05T09:20:00Z",
+    },
+    {
+      _id: "chap4",
+      story: {
+        _id: "story4",
+        title: "Phàm Nhân Tu Tiên",
+      },
+      title: "Chương 102: Thanh kiếm",
+      number: 102,
+      isFree: false,
+      status: "rejected",
+      rejectReason:
+        "Nội dung chương có quá nhiều lỗi chính tả, cần chỉnh sửa lại.",
+      author: {
+        _id: "user2",
+        username: "reader123",
+      },
+      content:
+        "Hàn Lập cầm thanh kiếm trong tay, bất ngờ vì trọng lượng của nó. Thanh kiếm nhẹ như không, nhưng anh có thể cảm nhận được sức mạnh ẩn chứa bên trong.\n\nKhi anh rút kiếm ra khỏi vỏ, ánh sáng lạnh lẽo phản chiếu từ lưỡi kiếm, chiếu sáng cả căn phòng tối.\n\nĐây không phải là một thanh kiếm tầm thường, mà là một bảo vật đã tồn tại hàng ngàn năm, ẩn chứa linh khí dày đặc.\n\nHàn Lập nhẹ nhàng vung kiếm, một đường kiếm khí bắn ra, cắt đứt một cọng cỏ cách đó mấy thước...",
+      createdAt: "2023-04-04T14:25:00Z",
+    },
+    {
+      _id: "chap5",
+      story: {
+        _id: "story5",
+        title: "Tru Tiên",
+      },
+      title: "Chương 55: Thanh Vân Môn",
+      number: 55,
+      isFree: true,
+      status: "approved",
+      author: {
+        _id: "user5",
+        username: "storymaster",
+      },
+      content:
+        "Trương Tiểu Phàm đứng trước cổng Thanh Vân Môn, ngước nhìn tấm biển lớn khắc ba chữ Thanh Vân Môn bằng vàng.\n\nAnh đã nghe về môn phái này từ lâu, nơi đây là một trong những môn phái lớn nhất thiên hạ, nơi đào tạo ra vô số cao thủ tuyệt thế.\n\nGiờ đây, anh sắp trở thành một phần của lịch sử huy hoàng đó.\n\nTrương Tiểu Phàm hít một hơi thật sâu, bước qua cổng lớn. Ngay khi bước vào, anh có thể cảm nhận được không khí linh khí đậm đặc và thanh tịnh, hoàn toàn khác với thế giới bên ngoài.",
+      createdAt: "2023-04-04T11:15:00Z",
+    },
+  ];
+}
